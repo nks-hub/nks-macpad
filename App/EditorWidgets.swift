@@ -183,7 +183,7 @@ final class EditorTextView: NSTextView, NSTextStorageDelegate {
     }
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        let modifiers = event.modifierFlags.intersection([.control, .shift, .option, .command])
         if modifiers == .control || modifiers == [.control, .shift] {
             if hasMarkedText() { return super.performKeyEquivalent(with: event) }
             let shifted = modifiers.contains(.shift)

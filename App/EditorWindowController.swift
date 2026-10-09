@@ -28,6 +28,21 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     var searchGeneration = 0
     var busyClosing = false
     private var tabsWidth: NSLayoutConstraint?
+    private var restoringViewState = false
+    private var displayedTabs: [TabPresentation] = []
+    private var metricsNoteID: UUID?
+    private var metricsRevision: UInt64?
+    private var lineStarts = [0]
+    private var characterCount = 0
+
+    private struct TabPresentation: Equatable {
+        let id: UUID
+        let title: String
+        let path: String?
+        let pinned: Bool
+        let dirty: Bool
+        let selected: Bool
+    }
 
     init(app: AppDelegate, quick: Bool = false, id: UUID = UUID()) {
         self.app = app
@@ -181,14 +196,19 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         row.spacing = 4
         row.translatesAutoresizingMaskIntoConstraints = false
         menuRow.addSubview(row)
-        for title in [L("Soubor", "File"), L("Úpravy", "Edit"), L("Zobrazení", "View")] {
+        for (title, sectionAction) in [
+            (L("Soubor", "File"), #selector(AppDelegate.openPanel(_:))),
+            (L("Úpravy", "Edit"), #selector(NSText.cut(_:))),
+            (L("Zobrazení", "View"), #selector(toggleWrap(_:)))
+        ] {
             let button = ChromeMenuButton()
             button.title = title
-            button.menuProvider = { [weak self] in
-                self?.window?.makeFirstResponder(self?.textView)
-                guard let source = NSApp.mainMenu?.items.first(where: { $0.title == title })?.submenu,
+            button.menuProvider = {
+                guard let source = NSApp.mainMenu?.items.compactMap(\.submenu).first(where: { menu in
+                    menu.items.contains { $0.action == sectionAction }
+                }),
                       let copy = source.copy() as? NSMenu else { return nil }
-                if title == L("Úpravy", "Edit"),
+                if sectionAction == #selector(NSText.cut(_:)),
                    let text = NSApp.mainMenu?.items.first(where: { $0.title == "Text" })?.copy() as? NSMenuItem {
                     copy.addItem(.separator())
                     copy.addItem(text)
@@ -244,6 +264,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         notes.append(note)
         select(note.id)
         app.changed()
+        app.refreshSearchResults()
     }
 
     func select(_ id: UUID) {
@@ -254,18 +275,22 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     }
 
     func captureSelection() {
-        guard let note = active, let view = textView else { return }
+        guard !restoringViewState, let note = active, let view = textView else { return }
         let range = view.selectedRange()
         let length = (view.string as NSString).length
         let location = min(range.location, length)
         note.selection = NSRange(location: location, length: min(range.length, length - location))
-        note.scrollY = Double(view.enclosingScrollView?.contentView.bounds.minY ?? 0)
+        note.scrollY = max(0, Double(view.enclosingScrollView?.contentView.bounds.minY ?? 0))
     }
 
     func refresh() {
+        restoringViewState = true
+        defer { restoringViewState = false }
         if active == nil { activeID = notes.first?.id }
         body.subviews.forEach { $0.removeFromSuperview() }
         if let note = active {
+            let selection = note.selection
+            let scrollY = note.scrollY
             let view: EditorTextView
             if let existing = textViews[note.id] { view = existing }
             else {
@@ -310,9 +335,11 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
                 scroll.bottomAnchor.constraint(equalTo: body.bottomAnchor)
             ])
             configure(view)
-            view.setSelectedRange(note.selection)
+            window?.contentView?.layoutSubtreeIfNeeded()
+            if let container = view.textContainer { view.layoutManager?.ensureLayout(for: container) }
+            view.setSelectedRange(selection)
             window?.makeFirstResponder(view)
-            scroll.contentView.scroll(to: NSPoint(x: 0, y: note.scrollY))
+            scroll.contentView.scroll(to: NSPoint(x: 0, y: scrollY))
             scroll.reflectScrolledClipView(scroll.contentView)
         }
         refreshTitles()
@@ -336,8 +363,14 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     }
 
     func refreshTitles() {
-        tabs.arrangedSubviews.forEach { tabs.removeArrangedSubview($0); $0.removeFromSuperview() }
         let ordered = notes.filter(\.pinned) + notes.filter { !$0.pinned }
+        let presentation = ordered.map { note in
+            TabPresentation(id: note.id, title: note.title, path: note.fileURL?.path,
+                            pinned: note.pinned, dirty: note.isDocumentEdited, selected: note.id == activeID)
+        }
+        guard presentation != displayedTabs else { updateStatus(); return }
+        displayedTabs = presentation
+        tabs.arrangedSubviews.forEach { tabs.removeArrangedSubview($0); $0.removeFromSuperview() }
         var totalWidth: CGFloat = 0
         for note in ordered {
             let button = TabButton(title: note.title, target: self, action: #selector(tabSelected(_:)))
@@ -394,12 +427,26 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         status.textColor = .secondaryLabelColor
         let value = note.text as NSString
         let selection = textView?.selectedRange() ?? note.selection
-        let prefix = value.substring(to: min(selection.location, value.length))
-        let line = prefix.reduce(1) { $1 == "\n" ? $0 + 1 : $0 }
-        let column = (prefix.split(separator: "\n", omittingEmptySubsequences: false).last?.count ?? 0) + 1
+        if metricsNoteID != note.id || metricsRevision != note.revision {
+            lineStarts = [0]
+            for (offset, unit) in note.text.utf16.enumerated() where unit == 10 { lineStarts.append(offset + 1) }
+            characterCount = note.text.count
+            metricsNoteID = note.id
+            metricsRevision = note.revision
+        }
+        let location = min(selection.location, value.length)
+        var lower = 0
+        var upper = lineStarts.count
+        while lower < upper {
+            let middle = (lower + upper) / 2
+            if lineStarts[middle] <= location { lower = middle + 1 } else { upper = middle }
+        }
+        let lineIndex = max(0, lower - 1)
+        let line = lineIndex + 1
+        let column = value.substring(with: NSRange(location: lineStarts[lineIndex], length: location - lineStarts[lineIndex])).count + 1
         let count = selection.length > 0
             ? value.substring(with: NSRange(location: min(selection.location, value.length), length: min(selection.length, max(0, value.length - selection.location)))).count
-            : note.text.count
+            : characterCount
         let selected = selection.length > 0 ? L(" vybráno", " selected") : L(" znaků", " characters")
         status.stringValue = (note.externalChange ? L("Soubor změněn nebo nedostupný. ", "File changed or unavailable. ") : "")
             + "\(L("Ř.", "Ln")) \(line), \(L("sl.", "Col")) \(column)"
@@ -431,10 +478,11 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         note.changed(to: view.string)
         view.enclosingScrollView?.verticalRulerView?.needsDisplay = true
         app.changed()
-        app.editors.filter { !$0.findAll.isHidden }.forEach { $0.searchAllChanged(nil) }
+        app.refreshSearchResults()
     }
 
     func textViewDidChangeSelection(_ notification: Notification) {
+        guard !restoringViewState else { return }
         captureSelection()
         updateStatus()
         app.sessionPending = true
@@ -466,7 +514,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
                 if ok {
                     sender.orderOut(nil)
                     self.app.changed()
-                    if self.quick { self.app.previousApplication?.activate(options: []) }
+                    if self.quick { self.app.restoreQuickNoteFocus() }
                 } else { self.app.showError(self.app.sessionFailure ?? "Session write failed") }
             }
         } else {
@@ -476,6 +524,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
                 if ok {
                     self.notes.removeAll()
                     self.app.editors.removeAll { $0 === self }
+                    self.app.refreshSearchResults()
                     self.allowClose = true
                     sender.close()
                 }

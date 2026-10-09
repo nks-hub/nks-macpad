@@ -21,7 +21,7 @@ extension EditorWindowController {
             let oldActive = self.activeID
             self.captureSelection()
             self.notes.removeAll { $0 === note }
-            self.activeID = self.notes.first?.id
+            if self.activeID == note.id { self.activeID = self.notes.first?.id }
             if self.notes.isEmpty { self.notes.append(TextDocument()); self.activeID = self.notes[0].id }
             self.refresh()
             self.app.flushSession { stored in
@@ -34,7 +34,7 @@ extension EditorWindowController {
                         self.app.closedFiles = Array(self.app.closedFiles.suffix(20))
                     }
                     self.app.changed()
-                    self.app.editors.filter { !$0.findAll.isHidden }.forEach { $0.searchAllChanged(nil) }
+                    self.app.refreshSearchResults()
                 } else {
                     let additions = self.notes.filter { candidate in !oldNotes.contains { $0.id == candidate.id } && !candidate.text.isEmpty }
                     self.notes = oldNotes + additions
@@ -58,6 +58,7 @@ extension EditorWindowController {
         if let title = askText(L("Název konceptu", "Draft name"), value: note.customTitle ?? "") {
             note.customTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
             app.changed()
+            app.refreshSearchResults()
         }
     }
 
@@ -87,6 +88,7 @@ extension EditorWindowController {
         }
         target.select(note.id)
         app.changed()
+        app.refreshSearchResults()
     }
 
     func cycleTab(backward: Bool) {
@@ -273,13 +275,13 @@ extension EditorWindowController {
         view.setSelectedRange(NSRange(location: range.location, length: (replacement as NSString).length))
     }
 
-    @objc func sortLines(_ sender: Any?) { transformSelectedLines(name: L("Seřadit řádky", "Sort lines")) { TextOperations.sortedLines($0, locale: .current) } }
+    @objc func sortLines(_ sender: Any?) { transformSelectedLines(name: L("Seřadit řádky", "Sort lines")) { TextOperations.sortedLines($0, locale: Preferences.interfaceLocale) } }
     @objc func uniqueLines(_ sender: Any?) { transformSelectedLines(name: L("Odstranit duplicitní řádky", "Remove duplicate lines"), transform: TextOperations.uniqueLines) }
     func transformSelectedLines(name: String, transform: (String) -> String) {
         guard let view = textView, view.selectedRange().length > 0 else { NSSound.beep(); return }
         let text = view.string as NSString
         let selection = view.selectedRange()
-        let range = text.lineRange(for: NSRange(location: selection.location, length: max(0, selection.length - 1)))
+        let range = text.lineRange(for: selection)
         replaceRange(range, with: transform(text.substring(with: range)), name: name)
     }
 
@@ -298,7 +300,7 @@ extension EditorWindowController {
         guard let view = textView else { return }
         let value = view.string as NSString
         let selection = view.selectedRange()
-        let range = value.lineRange(for: NSRange(location: selection.location, length: max(0, selection.length - 1)))
+        let range = value.lineRange(for: selection)
         let adjacent: NSRange
         if down {
             guard NSMaxRange(range) < value.length else { return }

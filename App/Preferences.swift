@@ -1,11 +1,15 @@
 import AppKit
 
 func L(_ cs: String, _ en: String) -> String {
-    let language = UserDefaults.standard.string(forKey: "language") ?? Locale.preferredLanguages.first ?? "en"
-    return language.hasPrefix("cs") ? cs : en
+    Preferences.interfaceLanguage == "cs" ? cs : en
 }
 
 enum Preferences {
+    static var interfaceLanguage: String {
+        let language = UserDefaults.standard.string(forKey: "language") ?? Locale.preferredLanguages.first ?? "en"
+        return language.hasPrefix("cs") ? "cs" : "en"
+    }
+    static var interfaceLocale: Locale { Locale(identifier: interfaceLanguage) }
     static var restore: Bool {
         get { UserDefaults.standard.object(forKey: "restore") as? Bool ?? true }
         set { UserDefaults.standard.set(newValue, forKey: "restore") }

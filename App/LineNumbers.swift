@@ -13,26 +13,43 @@ final class LineNumbers: NSRulerView {
     required init(coder: NSCoder) { fatalError("Use init(scrollView:editor:)") }
 
     override func drawHashMarksAndLabels(in rect: NSRect) {
-        guard let editor, let layout = editor.layoutManager, let container = editor.textContainer else { return }
         NSColor.windowBackgroundColor.setFill()
         bounds.intersection(rect).fill()
+        let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular), .foregroundColor: NSColor.secondaryLabelColor]
+        for (number, point) in visibleLineLabels() {
+            let label = "\(number)" as NSString
+            let size = label.size(withAttributes: attributes)
+            label.draw(at: NSPoint(x: ruleThickness - size.width - 8, y: point.y), withAttributes: attributes)
+        }
+    }
+
+    func visibleLineLabels() -> [(number: Int, origin: NSPoint)] {
+        guard let editor, let layout = editor.layoutManager, let container = editor.textContainer else { return [] }
         let text = editor.string as NSString
         let visible = editor.visibleRect.offsetBy(dx: -editor.textContainerOrigin.x, dy: -editor.textContainerOrigin.y)
+        layout.ensureLayout(forBoundingRect: visible, in: container)
         let glyphs = layout.glyphRange(forBoundingRect: visible, in: container)
         let characters = layout.characterRange(forGlyphRange: glyphs, actualGlyphRange: nil)
         var location = text.lineRange(for: NSRange(location: min(characters.location, text.length), length: 0)).location
         var number = text.substring(to: location).reduce(1) { $1 == "\n" ? $0 + 1 : $0 }
-        let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular), .foregroundColor: NSColor.secondaryLabelColor]
+        var labels: [(number: Int, origin: NSPoint)] = []
         while location < text.length && location <= NSMaxRange(characters) {
             let glyph = layout.glyphIndexForCharacter(at: location)
             let fragment = layout.lineFragmentRect(forGlyphAt: glyph, effectiveRange: nil)
             let point = convert(NSPoint(x: 0, y: fragment.minY + editor.textContainerOrigin.y), from: editor)
-            let label = "\(number)" as NSString
-            let size = label.size(withAttributes: attributes)
-            label.draw(at: NSPoint(x: ruleThickness - size.width - 8, y: point.y), withAttributes: attributes)
+            labels.append((number, point))
             location = NSMaxRange(text.lineRange(for: NSRange(location: location, length: 0)))
             number += 1
         }
+        if text.length == 0 || editor.string.hasSuffix("\n") {
+            let fragment = layout.extraLineFragmentRect
+            if fragment.intersects(visible) || text.length == 0 {
+                let finalNumber = editor.string.reduce(1) { $1 == "\n" ? $0 + 1 : $0 }
+                let point = convert(NSPoint(x: 0, y: fragment.minY + editor.textContainerOrigin.y), from: editor)
+                labels.append((finalNumber, point))
+            }
+        }
+        return labels
     }
 }
 
