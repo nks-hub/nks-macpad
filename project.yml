@@ -1,0 +1,83 @@
+name: MacPad
+options:
+  minimumXcodeGenVersion: 2.44.1
+  deploymentTarget:
+    macOS: '14.0'
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    MACOSX_DEPLOYMENT_TARGET: '14.0'
+    CODE_SIGNING_ALLOWED: NO
+    MARKETING_VERSION: '0.1.0'
+    CURRENT_PROJECT_VERSION: '1'
+targets:
+  MacPadCore:
+    type: framework
+    platform: macOS
+    sources: [Sources/MacPadCore]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nkshub.macpad.core
+        GENERATE_INFOPLIST_FILE: YES
+        SKIP_INSTALL: YES
+  MacPad:
+    type: application
+    platform: macOS
+    sources: [App]
+    dependencies:
+      - target: MacPadCore
+    info:
+      path: build/Info.plist
+      properties:
+        CFBundleDisplayName: MacPad
+        CFBundleLocalizations: [cs, en]
+        CFBundleDevelopmentRegion: en
+        CFBundleIdentifier: com.nkshub.macpad
+        NSPrincipalClass: NSApplication
+        NSHighResolutionCapable: true
+        NSSupportsAutomaticTermination: false
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Plain text
+            CFBundleTypeRole: Editor
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.plain-text, public.text, net.daringfireball.markdown]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nkshub.macpad
+  MacPadCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [Tests/MacPadCoreTests]
+    dependencies:
+      - target: MacPadCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+  MacPadAppTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/MacPadAppTests
+      - path: App
+        excludes: [main.swift]
+    dependencies:
+      - target: MacPadCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  MacPadCore:
+    build:
+      targets:
+        MacPadCore: all
+        MacPadCoreTests: [test]
+    test:
+      targets: [MacPadCoreTests]
+  MacPad:
+    build:
+      targets:
+        MacPad: all
+        MacPadCoreTests: [test]
+        MacPadAppTests: [test]
+    test:
+      targets: [MacPadCoreTests, MacPadAppTests]

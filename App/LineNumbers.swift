@@ -1,0 +1,44 @@
+import AppKit
+
+final class LineNumbers: NSRulerView {
+    weak var editor: NSTextView?
+
+    init(scrollView: NSScrollView, editor: NSTextView) {
+        self.editor = editor
+        super.init(scrollView: scrollView, orientation: .verticalRuler)
+        clipsToBounds = true
+        ruleThickness = 48
+        clientView = editor
+    }
+    required init(coder: NSCoder) { fatalError("Use init(scrollView:editor:)") }
+
+    override func drawHashMarksAndLabels(in rect: NSRect) {
+        guard let editor, let layout = editor.layoutManager, let container = editor.textContainer else { return }
+        NSColor.windowBackgroundColor.setFill()
+        bounds.intersection(rect).fill()
+        let text = editor.string as NSString
+        let visible = editor.visibleRect.offsetBy(dx: -editor.textContainerOrigin.x, dy: -editor.textContainerOrigin.y)
+        let glyphs = layout.glyphRange(forBoundingRect: visible, in: container)
+        let characters = layout.characterRange(forGlyphRange: glyphs, actualGlyphRange: nil)
+        var location = text.lineRange(for: NSRange(location: min(characters.location, text.length), length: 0)).location
+        var number = text.substring(to: location).reduce(1) { $1 == "\n" ? $0 + 1 : $0 }
+        let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular), .foregroundColor: NSColor.secondaryLabelColor]
+        while location < text.length && location <= NSMaxRange(characters) {
+            let glyph = layout.glyphIndexForCharacter(at: location)
+            let fragment = layout.lineFragmentRect(forGlyphAt: glyph, effectiveRange: nil)
+            let point = convert(NSPoint(x: 0, y: fragment.minY + editor.textContainerOrigin.y), from: editor)
+            let label = "\(number)" as NSString
+            let size = label.size(withAttributes: attributes)
+            label.draw(at: NSPoint(x: ruleThickness - size.width - 8, y: point.y), withAttributes: attributes)
+            location = NSMaxRange(text.lineRange(for: NSRange(location: location, length: 0)))
+            number += 1
+        }
+    }
+}
+
+extension EditorWindowController {
+    @objc func toggleLineNumbers(_ sender: Any?) {
+        UserDefaults.standard.set(!UserDefaults.standard.bool(forKey: "lineNumbers"), forKey: "lineNumbers")
+        app.editors.forEach { editor in editor.textViews.values.forEach { editor.configure($0) } }
+    }
+}

@@ -15,6 +15,7 @@ AGENTS.override.md
 xcuserdata/
 *.xcuserstate
 DerivedData/
+MacPad.xcodeproj/
 .build/
 .swiftpm/
 build/

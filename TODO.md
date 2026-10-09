@@ -2,6 +2,14 @@
 
 Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritéria jsou v [plánu](PLAN.md).
 
+Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Testování je nyní odložené; otevřené položky mohou mít hotový kód, ale chybí jejich úplné ověření. Starší běh 41 testů nepotvrzuje novější úpravy UI, schránky, zkratek a asynchronního otevírání.
+
+## Před pokračováním v ověřování
+
+- [ ] Až bude testování znovu povolené, sestavit aktuální zdroje a spustit připravené testy.
+- [ ] Ověřit nové nastavení, změnu zkratky, vkládání CRLF textu a otevírání souborů na pozadí včetně zrušení.
+- [ ] Ověřit klikání, zavírání a přetažení nových karet, nabídky a světlé i tmavé vykreslení.
+
 ## Příprava
 
 - [x] Ověřit výchozí stav adresáře a založit lokální Git na větvi main.
@@ -16,10 +24,10 @@ Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritér
 
 - [ ] Změřit P01 až P12 v izolované relaci Windows Notepadu a zaznamenat verzi i nastavení.
 - [ ] Uzavřít rozdíly vůči referenci: zkratky, zavření oken, konce řádků a formát souborů.
-- [ ] Ověřit přihlášení do VNC a běh testů v uživatelské relaci Macu.
-- [ ] Vytvořit AppKit projekt, opakovatelný build a XCTest targety.
-- [ ] Ověřit dvě karty, NSDocument, NSTextView, oddělené undo a bezpečné explicitní ukládání.
-- [ ] Funkčním pokusem vybrat jediný způsob obnovy obsahu a vyřešit ukončení bez přepsání souboru.
+- [x] Ověřit přihlášení do VNC a běh testů v uživatelské relaci Macu.
+- [x] Vytvořit AppKit projekt, opakovatelný build a XCTest targety.
+- [x] Ověřit dvě karty, NSDocument, NSTextView, oddělené undo a bezpečné explicitní ukládání na původním rozhraní.
+- [x] Zvolit vlastní SessionStore a ověřit ukončení bez přepsání zdrojového souboru.
 - [ ] Ověřit horní lištu, registraci a kolize globální zkratky a návrat fokusu rychlé poznámky.
 
 ## B. Editor a soubory
@@ -72,7 +80,8 @@ Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritér
 
 ## F. Veřejné vydání
 
-- [ ] Rozhodnout konečný název, bundle identifier, licenci a cílový veřejný repozitář.
+- [x] Nastavit identifikátory com.nkshub.macpad a com.nkshub.macpad.core.
+- [ ] Rozhodnout konečný název, licenci a cílový veřejný repozitář.
 - [ ] Připravit release sestavení a potvrdit oprávněnou podpisovou identitu.
 - [ ] Podepsat, notarizovat a ověřit balíček přes Gatekeeper na běžné instalaci.
 - [ ] Ověřit P15 včetně aktualizace se zachováním konceptů a dokumentů.
