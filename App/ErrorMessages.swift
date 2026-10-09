@@ -17,6 +17,8 @@ func fileErrorMessage(_ error: Error) -> String {
     }
     if let error = error as? TextFileCodecError {
         switch error {
+        case .unsupportedUTF32:
+            return L("UTF-32 zatím není podporované. Soubor nebyl změněn; nejprve jej převeďte do UTF-8 nebo UTF-16.", "UTF-32 is not supported yet. The file was not changed; convert it to UTF-8 or UTF-16 first.")
         case .invalidData:
             return L("Obsah neodpovídá zvolenému kódování. Soubor nebyl změněn.", "The content does not match the chosen encoding. The file was not changed.")
         case .unrepresentableText:

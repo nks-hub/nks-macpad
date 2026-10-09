@@ -3,10 +3,11 @@ import MacPadCore
 
 final class TextDocument: NSDocument {
     let id: UUID
-    var text = ""
-    var savedText: String?
-    var format = TextFormat()
-    var savedFormat: TextFormat?
+    var text = "" { didSet { dirtyCache = nil } }
+    var savedText: String? { didSet { dirtyCache = nil } }
+    var format = TextFormat() { didSet { dirtyCache = nil } }
+    var savedFormat: TextFormat? { didSet { dirtyCache = nil } }
+    private var dirtyCache: Bool?
     var stamp: FileStamp?
     var customTitle: String?
     var pinned = false
@@ -26,15 +27,17 @@ final class TextDocument: NSDocument {
     override class var autosavesDrafts: Bool { false }
     override var isDocumentEdited: Bool {
         if externalChange { return true }
-        if let savedText { return !text.utf8.elementsEqual(savedText.utf8) || format != savedFormat }
-        return !text.isEmpty
+        if let dirtyCache { return dirtyCache }
+        let dirty = savedText.map { !text.utf8.elementsEqual($0.utf8) || format != savedFormat } ?? !text.isEmpty
+        dirtyCache = dirty
+        return dirty
     }
 
     var title: String {
         if let fileURL { return fileURL.lastPathComponent }
         if let customTitle, !customTitle.isEmpty { return customTitle }
-        let first = text.split(whereSeparator: \.isNewline).first.map(String.init) ?? ""
-        return first.isEmpty ? L("Nová poznámka", "New note") : String(first.prefix(48))
+        let first = String(text.lazy.drop(while: \.isNewline).prefix(while: { !$0.isNewline }).prefix(48))
+        return first.isEmpty ? L("Nová poznámka", "New note") : first
     }
 
     override func data(ofType typeName: String) throws -> Data {

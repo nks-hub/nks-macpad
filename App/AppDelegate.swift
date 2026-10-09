@@ -7,9 +7,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var hotKey: QuickNoteShortcut?
     var registeredShortcut: (UInt32, UInt32)?
     var previousApplication: NSRunningApplication?
+    weak var previousEditor: EditorWindowController?
     var closedFiles: [(URL, NSRange)] = []
     let diskQueue = DispatchQueue(label: "MacPad.disk", qos: .userInitiated)
-    let readQueue = DispatchQueue(label: "MacPad.open", qos: .userInitiated)
+    let readQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.name = "MacPad.open"
+        queue.qualityOfService = .userInitiated
+        queue.maxConcurrentOperationCount = 1
+        return queue
+    }()
     var openGeneration = 0
     var pendingOpenCount = 0
     var deferredOpenResults: [() -> Void] = []
@@ -19,6 +26,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         didSet { if sessionPending { sessionRevision &+= 1 } }
     }
     var sessionFailure: String?
+    private(set) var sessionWriteInFlight = false
+    private var sessionWaiters: [(Bool) -> Void] = []
     var timer: Timer?
     var preferencesWindow: PreferencesWindow?
     var editingLocked = false
@@ -80,7 +89,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updateStatusItem()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self, self.sessionPending else { return }
-            self.flushSession { _ in }
+            self.flushSession()
         }
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -129,7 +138,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let generation = openGeneration
         for url in urls {
             pendingOpenCount += 1
-            readQueue.async {
+            let operation = BlockOperation()
+            operation.addExecutionBlock { [weak operation] in
+                guard operation?.isCancelled == false else { return }
                 let result = Result { () -> (LoadedText, String) in
                     let loaded = try TextFileStore.read(url, encoding: encoding)
                     return (loaded, try TextFileStore.identity(url))
@@ -158,6 +169,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     else { finish() }
                 }
             }
+            readQueue.addOperation(operation)
         }
         editors.forEach { $0.updateStatus() }
     }
@@ -194,6 +206,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func cancelOpening(_ sender: Any?) {
         openGeneration += 1
+        readQueue.cancelAllOperations()
         pendingOpenCount = 0
         deferredOpenResults.removeAll()
         editors.forEach { $0.updateStatus() }
@@ -204,32 +217,51 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         editors.forEach { $0.refreshTitles() }
     }
 
+    func refreshSearchResults() {
+        editors.filter { !$0.findAll.isHidden }.forEach { $0.searchAllChanged(nil) }
+    }
+
     func snapshot() -> SessionSnapshot {
         SessionSnapshot(windows: editors.map { $0.snapshot() })
     }
 
-    func flushSession(_ completion: @escaping (Bool) -> Void) {
-        guard Preferences.restore else { sessionPending = false; completion(true); return }
+    func flushSession(_ completion: ((Bool) -> Void)? = nil) {
+        guard Preferences.restore else { sessionPending = false; completion?(true); return }
+        if let completion { sessionWaiters.append(completion) }
+        guard !sessionWriteInFlight else { return }
+        writeLatestSession()
+    }
+
+    private func writeLatestSession() {
         let value = snapshot()
         let revision = sessionRevision
         sessionPending = false
+        sessionWriteInFlight = true
         diskQueue.async { [self] in
             do {
                 try sessionStore.save(value)
                 DispatchQueue.main.async {
+                    self.sessionWriteInFlight = false
                     self.sessionFailure = nil
                     self.editors.forEach { $0.updateStatus() }
-                    if self.sessionRevision != revision { self.flushSession(completion) }
-                    else { completion(true) }
+                    if Preferences.restore && self.sessionRevision != revision { self.writeLatestSession() }
+                    else { self.completeSessionWaiters(true) }
                 }
             } catch {
                 DispatchQueue.main.async {
+                    self.sessionWriteInFlight = false
                     self.sessionFailure = error.localizedDescription
                     self.editors.forEach { $0.updateStatus() }
-                    completion(false)
+                    self.completeSessionWaiters(false)
                 }
             }
         }
+    }
+
+    private func completeSessionWaiters(_ succeeded: Bool) {
+        let waiters = sessionWaiters
+        sessionWaiters.removeAll()
+        waiters.forEach { $0(succeeded) }
     }
 
     func save(_ note: TextDocument, as saveAs: Bool = false, completion: @escaping (Bool) -> Void) {
@@ -325,45 +357,55 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             confirm.addButton(withTitle: L("Zrušit", "Cancel"))
             confirm.addButton(withTitle: L("Načíst", "Reload"))
             if confirm.runModal() == .alertSecondButtonReturn {
-                do { try note.load(url); editors.forEach { $0.reload(note) }; changed() }
+                do { try note.load(url, encoding: note.format.encoding); editors.forEach { $0.reload(note) }; changed(); refreshSearchResults() }
                 catch { showError(error.localizedDescription) }
             }
             completion(false)
         } else { completion(false) }
     }
 
-    func resolveChanges(_ notes: [TextDocument], index: Int = 0, completion: @escaping (Bool) -> Void) {
+    func resolveChanges(_ notes: [TextDocument], index: Int = 0, allowDiscard: Bool = true, completion: @escaping (Bool) -> Void) {
         guard index < notes.count else { completion(true); return }
         let note = notes[index]
         guard !note.saving else { completion(false); return }
         if let url = note.fileURL, !FileManager.default.fileExists(atPath: url.path) { note.externalChange = true }
-        guard note.isDocumentEdited else { resolveChanges(notes, index: index + 1, completion: completion); return }
+        guard note.isDocumentEdited else { resolveChanges(notes, index: index + 1, allowDiscard: allowDiscard, completion: completion); return }
         let alert = NSAlert()
         alert.messageText = L("Uložit změny v ", "Save changes in ") + note.title + "?"
         alert.addButton(withTitle: L("Uložit", "Save"))
         alert.addButton(withTitle: L("Zrušit", "Cancel"))
-        alert.addButton(withTitle: L("Zahodit změny", "Discard changes"))
+        if allowDiscard { alert.addButton(withTitle: L("Zahodit změny", "Discard changes")) }
+        else { alert.informativeText = L("Obnovovací kopie nelze odstranit. Poznámku lze uložit do souboru nebo ukončení zrušit.", "Recovery copies cannot be removed. Save this note to a file or cancel quitting.") }
         switch alert.runModal() {
         case .alertFirstButtonReturn:
             save(note) { ok in
-                if ok && !note.isDocumentEdited { self.resolveChanges(notes, index: index + 1, completion: completion) }
+                if ok && !note.isDocumentEdited { self.resolveChanges(notes, index: index + 1, allowDiscard: allowDiscard, completion: completion) }
                 else { completion(false) }
             }
-        case .alertThirdButtonReturn: resolveChanges(notes, index: index + 1, completion: completion)
+        case .alertThirdButtonReturn where allowDiscard: resolveChanges(notes, index: index + 1, allowDiscard: allowDiscard, completion: completion)
         default: completion(false)
         }
     }
 
     @objc func saveAll(_ sender: Any?) {
+        guard !editingLocked else { return }
         let notes = editors.flatMap(\.notes).filter(\.isDocumentEdited)
+        guard !notes.isEmpty, !notes.contains(where: \.saving) else { return }
+        lockEditing(true)
         saveSequence(notes, index: 0)
     }
 
     func saveSequence(_ notes: [TextDocument], index: Int) {
-        guard index < notes.count else { return }
+        guard index < notes.count else { lockEditing(false); return }
+        guard editors.contains(where: { $0.notes.contains(where: { $0 === notes[index] }) }) else {
+            lockEditing(false)
+            showError(L("Ukládání zastaveno: dokument už není otevřený.", "Saving stopped: the document is no longer open."))
+            return
+        }
         save(notes[index]) { ok in
             if ok { self.saveSequence(notes, index: index + 1) }
             else {
+                self.lockEditing(false)
                 self.showError(L("Ukládání zastaveno. Uloženo ", "Saving stopped. Saved ")
                     + "\(index)/\(notes.count). " + L("Ostatní změny zůstávají otevřené.", "Remaining edits are still open."))
             }
@@ -388,9 +430,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 alert.messageText = L("Obnovu se nepodařilo uložit.", "The session could not be saved.")
                 alert.informativeText = L("Můžete zůstat v aplikaci, nebo vyřešit uložení jednotlivých poznámek a ukončit. Původní obnovovací data zůstanou zachována.", "Stay in the app, or resolve each note and quit. Original recovery data will remain untouched.")
                 alert.addButton(withTitle: L("Zůstat v aplikaci", "Stay in app"))
-                alert.addButton(withTitle: L("Vyřešit poznámky a ukončit…", "Resolve notes and quit…"))
+                alert.addButton(withTitle: L("Uložit poznámky a ukončit…", "Save notes and quit…"))
                 if alert.runModal() == .alertSecondButtonReturn {
-                    self.resolveChanges(self.editors.flatMap(\.notes)) { self.finishQuit($0) }
+                    self.resolveChanges(self.editors.flatMap(\.notes), allowDiscard: false) { self.finishQuit($0) }
                 } else { self.finishQuit(false) }
             }
         } else {

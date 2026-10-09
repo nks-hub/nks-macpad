@@ -94,14 +94,24 @@ extension AppDelegate {
 
     @objc func quickNote(_ sender: Any?) {
         guard !editingLocked else { return }
-        if NSWorkspace.shared.frontmostApplication?.processIdentifier != ProcessInfo.processInfo.processIdentifier {
-            previousApplication = NSWorkspace.shared.frontmostApplication
-        }
         let editor = editors.first(where: \.quick) ?? makeWindow(quick: true)
+        if editor.window?.isKeyWindow != true {
+            previousApplication = NSWorkspace.shared.frontmostApplication
+            previousEditor = activeEditor?.quick == false ? activeEditor : nil
+        }
         if editor.notes.isEmpty { editor.addNote(TextDocument()) }
         NSApp.activate(ignoringOtherApps: true)
         editor.showWindow(nil)
         editor.window?.makeFirstResponder(editor.textView)
         changed()
+    }
+
+    func restoreQuickNoteFocus() {
+        if previousApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier {
+            previousEditor?.showWindow(nil)
+            previousEditor?.window?.makeFirstResponder(previousEditor?.textView)
+        } else { previousApplication?.activate(options: []) }
+        previousApplication = nil
+        previousEditor = nil
     }
 }
