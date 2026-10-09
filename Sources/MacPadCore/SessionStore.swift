@@ -73,6 +73,8 @@ public enum SessionStoreError: Error, LocalizedError {
     case inaccessibleCopy
     case invalidSelection
     case invalidScrollPosition
+    case invalidIdentity
+    case invalidActiveNote
 
     public var errorDescription: String? {
         switch self {
@@ -86,6 +88,10 @@ public enum SessionStoreError: Error, LocalizedError {
             return "The saved text selection is outside the document."
         case .invalidScrollPosition:
             return "The saved scroll position is invalid."
+        case .invalidIdentity:
+            return "The saved session contains duplicate window or note identifiers."
+        case .invalidActiveNote:
+            return "The saved active note does not belong to its window."
         }
     }
 }
@@ -192,6 +198,17 @@ public final class SessionStore {
 
     private func validate(_ session: SessionSnapshot) throws {
         guard session.version == 1 else { throw SessionStoreError.unsupportedVersion(session.version) }
+        var windowIDs = Set<UUID>()
+        var noteIDs = Set<UUID>()
+        for window in session.windows {
+            guard windowIDs.insert(window.id).inserted else { throw SessionStoreError.invalidIdentity }
+            for note in window.notes {
+                guard noteIDs.insert(note.id).inserted else { throw SessionStoreError.invalidIdentity }
+            }
+            if let active = window.activeNoteID, !window.notes.contains(where: { $0.id == active }) {
+                throw SessionStoreError.invalidActiveNote
+            }
+        }
         for note in session.windows.flatMap(\.notes) {
             let length = note.text.utf16.count
             guard note.selectionLocation >= 0, note.selectionLocation <= length,

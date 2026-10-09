@@ -69,7 +69,7 @@ public enum TextFileStore {
             if actual == .missing {
                 try manager.moveItem(at: temporary, to: target)
             } else {
-                let backupName = "\(target.lastPathComponent).macpad-conflict-\(UUID().uuidString)"
+                let backupName = "MacPad-conflict-\(UUID().uuidString).txt"
                 let backup = target.deletingLastPathComponent().appendingPathComponent(backupName)
                 _ = try manager.replaceItemAt(target, withItemAt: temporary, backupItemName: backupName,
                                               options: .withoutDeletingBackupItem)

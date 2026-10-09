@@ -156,6 +156,43 @@ final class SessionStoreTests: XCTestCase {
         }
     }
 
+    func testInvalidIdentitiesCannotOverwriteValidSession() throws {
+        try store.save(session("retained"))
+        let originalMain = try Data(contentsOf: currentURL)
+        let originalBackup = try Data(contentsOf: backupURL)
+        for invalid in sessionsWithInvalidIdentities() {
+            XCTAssertThrowsError(try store.save(invalid))
+            XCTAssertEqual(try Data(contentsOf: currentURL), originalMain)
+            XCTAssertEqual(try Data(contentsOf: backupURL), originalBackup)
+        }
+    }
+
+    func testInvalidIdentitiesInMainRecoverValidBackup() throws {
+        try store.save(session("retained"))
+        for invalid in sessionsWithInvalidIdentities() {
+            try JSONEncoder().encode(invalid).write(to: currentURL)
+            XCTAssertEqual(try store.load()?.windows.first?.notes.first?.text, "retained")
+            XCTAssertTrue(store.lastLoadRecoveredFromBackup)
+        }
+    }
+
+    private func sessionsWithInvalidIdentities() -> [SessionSnapshot] {
+        let first = NoteSnapshot(text: "first")
+        let second = NoteSnapshot(text: "second")
+        let firstWindow = WindowSnapshot(notes: [first], activeNoteID: first.id)
+        let secondWindow = WindowSnapshot(notes: [second], activeNoteID: second.id)
+        let valid = SessionSnapshot(windows: [firstWindow, secondWindow])
+        var duplicateWindow = valid
+        duplicateWindow.windows[1].id = firstWindow.id
+        var duplicateNote = valid
+        duplicateNote.windows[0].notes.append(first)
+        var duplicateNoteAcrossWindows = valid
+        duplicateNoteAcrossWindows.windows[1].notes.append(first)
+        var foreignActiveNote = valid
+        foreignActiveNote.windows[0].activeNoteID = second.id
+        return [duplicateWindow, duplicateNote, duplicateNoteAcrossWindows, foreignActiveNote]
+    }
+
     private func session(_ text: String) -> SessionSnapshot {
         SessionSnapshot(windows: [WindowSnapshot(notes: [NoteSnapshot(text: text)])])
     }

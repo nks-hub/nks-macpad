@@ -74,6 +74,22 @@ final class TextFileTests: XCTestCase {
         }
     }
 
+    func testRemovedUTF8BOMStaysRemovedWithPreviousEncoding() throws {
+        let bytes = Data("Příliš\n".utf8)
+        let decoded = try TextFileCodec.decode(bytes, encoding: .utf8BOM)
+        XCTAssertEqual(decoded.format.encoding, .utf8)
+        XCTAssertFalse(decoded.format.hasBOM)
+        XCTAssertEqual(try TextFileCodec.encode(decoded.text, format: decoded.format), bytes)
+    }
+
+    func testUTF32BOMIsRejectedInsteadOfDecodingAsUTF16() {
+        for bytes in [Data([0xFF, 0xFE, 0, 0, 65, 0, 0, 0]), Data([0, 0, 0xFE, 0xFF, 0, 0, 0, 65])] {
+            XCTAssertThrowsError(try TextFileCodec.decode(bytes, encoding: .windows1250)) {
+                XCTAssertEqual($0 as? TextFileCodecError, .unsupportedUTF32)
+            }
+        }
+    }
+
     func testInvalidUTF8AndUTF16AreNotSilentlyRepaired() {
         for data in [Data([0xC0, 0xAF]), Data([0xFF]), Data([0xED, 0xA0, 0x80])] {
             XCTAssertThrowsError(try TextFileCodec.decode(data))
@@ -124,6 +140,39 @@ final class TextFileTests: XCTestCase {
             XCTAssertEqual($0 as? TextFileStoreError, .conflict(expected: old, actual: .missing))
         }
         XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
+    }
+
+    func testLongFilenameCanBeReplacedWithoutLeavingBackup() throws {
+        let file = directory.appendingPathComponent(String(repeating: "a", count: 230) + ".txt")
+        let old = try TextFileStore.write("original", format: TextFormat(), to: file, expected: .missing)
+        _ = try TextFileStore.write("updated", format: TextFormat(), to: file, expected: old)
+        XCTAssertEqual(try TextFileStore.read(file).text, "updated")
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), [file.lastPathComponent])
+    }
+
+    func testReadOnlyFileCannotBeReplacedAndKeepsItsContents() throws {
+        let file = directory.appendingPathComponent("read-only.txt")
+        let old = try TextFileStore.write("original", format: TextFormat(), to: file, expected: .missing)
+        try FileManager.default.setAttributes([.posixPermissions: 0o400], ofItemAtPath: file.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path) }
+        XCTAssertFalse(FileManager.default.isWritableFile(atPath: file.path), "Run permission tests as an unprivileged user")
+        XCTAssertThrowsError(try TextFileStore.write("updated", format: TextFormat(), to: file, expected: old)) {
+            XCTAssertEqual(($0 as? CocoaError)?.code, .fileWriteNoPermission)
+        }
+        XCTAssertEqual(try Data(contentsOf: file), Data("original".utf8))
+    }
+
+    func testReadOnlyDirectoryPreventsCreationAndReplacement() throws {
+        let file = directory.appendingPathComponent("existing.txt")
+        let newFile = directory.appendingPathComponent("new.txt")
+        let old = try TextFileStore.write("original", format: TextFormat(), to: file, expected: .missing)
+        try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path) }
+        XCTAssertFalse(FileManager.default.isWritableFile(atPath: directory.path), "Run permission tests as an unprivileged user")
+        XCTAssertThrowsError(try TextFileStore.write("updated", format: TextFormat(), to: file, expected: old))
+        XCTAssertThrowsError(try TextFileStore.write("new", format: TextFormat(), to: newFile, expected: .missing))
+        XCTAssertEqual(try Data(contentsOf: file), Data("original".utf8))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: newFile.path))
     }
 
     func testFailedEncodingLeavesOriginalFileIntact() throws {

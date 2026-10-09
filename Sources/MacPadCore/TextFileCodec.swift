@@ -39,6 +39,7 @@ public enum TextFileCodecError: Error, Equatable {
     case invalidData(TextEncoding)
     case unrepresentableText(TextEncoding)
     case mixedLineEndings
+    case unsupportedUTF32
 }
 
 public enum TextFileCodec {
@@ -47,6 +48,9 @@ public enum TextFileCodec {
 
     /// A recognized BOM overrides the fallback encoding supplied for BOMless files.
     public static func decode(_ data: Data, encoding: TextEncoding? = nil) throws -> DecodedText {
+        if data.starts(with: [0xFF, 0xFE, 0, 0]) || data.starts(with: [0, 0, 0xFE, 0xFF]) {
+            throw TextFileCodecError.unsupportedUTF32
+        }
         let detected: TextEncoding?
         if data.starts(with: [0xEF, 0xBB, 0xBF]) {
             detected = .utf8BOM
@@ -57,7 +61,8 @@ public enum TextFileCodec {
         } else {
             detected = nil
         }
-        let selected = detected ?? encoding ?? .utf8
+        let fallback = encoding == .utf8BOM ? TextEncoding.utf8 : encoding
+        let selected = detected ?? fallback ?? .utf8
         var payload = data
         if detected == .utf8BOM {
             payload.removeFirst(3)
