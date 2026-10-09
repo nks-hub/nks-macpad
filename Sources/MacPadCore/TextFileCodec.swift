@@ -124,16 +124,29 @@ public enum TextFileCodec {
     }
 
     private static func normalize(_ text: String) -> String {
-        text.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
+        guard text.utf8.contains(13) else { return text }
+        return text.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
     }
 
     private static func detectLineEndings(_ text: String) -> LineEnding {
-        let withoutPairs = text.replacingOccurrences(of: "\r\n", with: "")
-        var found: [LineEnding] = []
-        if text.contains("\r\n") { found.append(.crlf) }
-        if withoutPairs.contains("\r") { found.append(.cr) }
-        if withoutPairs.contains("\n") { found.append(.lf) }
-        return found.count > 1 ? .mixed : (found.first ?? .crlf)
+        var hasCR = false
+        var hasLF = false
+        var hasCRLF = false
+        var pendingCR = false
+        for byte in text.utf8 {
+            if pendingCR {
+                pendingCR = false
+                if byte == 10 { hasCRLF = true; continue }
+                hasCR = true
+            }
+            if byte == 13 { pendingCR = true }
+            else if byte == 10 { hasLF = true }
+        }
+        if pendingCR { hasCR = true }
+        if [hasCR, hasLF, hasCRLF].filter({ $0 }).count > 1 { return .mixed }
+        if hasCR { return .cr }
+        if hasLF { return .lf }
+        return .crlf
     }
 
     private static func decodeUTF16(_ data: Data, encoding: TextEncoding) throws -> String {
@@ -160,6 +173,10 @@ public enum TextFileCodec {
                 index += 1
             }
         }
-        return String(decoding: units, as: UTF16.self)
+        var decoded = units.withUnsafeBufferPointer { buffer in
+            buffer.baseAddress.map { String(utf16CodeUnits: $0, count: buffer.count) } ?? ""
+        }
+        decoded.makeContiguousUTF8()
+        return decoded
     }
 }

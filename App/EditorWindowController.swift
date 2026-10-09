@@ -34,6 +34,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     private var metricsRevision: UInt64?
     private var lineStarts = [0]
     private var characterCount = 0
+    private var metricsASCII = false
 
     private struct TabPresentation: Equatable {
         let id: UUID
@@ -310,6 +311,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
                 view.isContinuousSpellCheckingEnabled = false
                 view.isAutomaticLinkDetectionEnabled = false
                 view.textContainerInset = NSSize(width: 18, height: 18)
+                view.layoutManager?.allowsNonContiguousLayout = true
                 view.autoresizingMask = [.width]
                 view.isVerticallyResizable = true
                 view.minSize = NSSize(width: 0, height: 0)
@@ -336,7 +338,10 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
             ])
             configure(view)
             window?.contentView?.layoutSubtreeIfNeeded()
-            if let container = view.textContainer { view.layoutManager?.ensureLayout(for: container) }
+            if let container = view.textContainer {
+                let viewport = NSRect(origin: NSPoint(x: 0, y: scrollY), size: scroll.contentSize)
+                view.layoutManager?.ensureLayout(forBoundingRect: viewport, in: container)
+            }
             view.setSelectedRange(selection)
             window?.makeFirstResponder(view)
             scroll.contentView.scroll(to: NSPoint(x: 0, y: scrollY))
@@ -429,8 +434,12 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         let selection = textView?.selectedRange() ?? note.selection
         if metricsNoteID != note.id || metricsRevision != note.revision {
             lineStarts = [0]
-            for (offset, unit) in note.text.utf16.enumerated() where unit == 10 { lineStarts.append(offset + 1) }
-            characterCount = note.text.count
+            metricsASCII = true
+            for (offset, unit) in note.text.utf16.enumerated() {
+                if unit == 10 { lineStarts.append(offset + 1) }
+                if unit > 127 || unit == 13 { metricsASCII = false }
+            }
+            characterCount = metricsASCII ? value.length : note.text.count
             metricsNoteID = note.id
             metricsRevision = note.revision
         }
@@ -467,18 +476,74 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     }
 
     func textDidChange(_ notification: Notification) {
-        guard let view = notification.object as? EditorTextView else { return }
-        synchronize(view)
+        guard notification.object is EditorTextView else { return }
         captureSelection()
         updateStatus()
     }
 
-    func synchronize(_ view: EditorTextView) {
-        guard let note = view.note, !note.text.utf8.elementsEqual(view.string.utf8) else { return }
-        note.changed(to: view.string)
+    private func copyText(_ source: NSString, range: NSRange) -> String {
+        let units = [UInt16](unsafeUninitializedCapacity: range.length) { buffer, count in
+            if let address = buffer.baseAddress, range.length > 0 { source.getCharacters(address, range: range) }
+            count = range.length
+        }
+        var value = units.withUnsafeBufferPointer { buffer in
+            buffer.baseAddress.map { String(utf16CodeUnits: $0, count: buffer.count) } ?? ""
+        }
+        value.makeContiguousUTF8()
+        return value
+    }
+
+    func synchronize(_ view: EditorTextView, editedRange: NSRange, changeInLength delta: Int) {
+        guard let note = view.note else { return }
+        let source = view.string as NSString
+        var applied = false
+        if note.utf16Length + delta == source.length, editedRange.location != NSNotFound,
+           NSMaxRange(editedRange) <= source.length {
+            // Expanding the new grapheme also captures IME edits that complete a surrogate or ZWJ sequence.
+            let newRange = source.length == 0 ? NSRange(location: 0, length: 0)
+                : source.rangeOfComposedCharacterSequences(for: editedRange)
+            if newRange.length >= delta {
+                let oldRange = NSRange(location: newRange.location, length: newRange.length - delta)
+                if let range = Range(oldRange, in: note.text) {
+                    let replacement = copyText(source, range: newRange)
+                    let canUpdateMetrics = metricsNoteID == note.id && metricsRevision == note.revision && metricsASCII
+                        && replacement.utf8.allSatisfy { $0 < 128 && $0 != 13 }
+                    note.replaceText(in: range, with: replacement)
+                    if canUpdateMetrics {
+                        updateASCIIMetrics(replacing: oldRange, with: replacement, delta: delta)
+                        metricsRevision = note.revision
+                    }
+                    applied = true
+                }
+            }
+        }
+        if !applied {
+            let value = copyText(source, range: NSRange(location: 0, length: source.length))
+            guard note.text.utf8.count != value.utf8.count || !note.text.utf8.elementsEqual(value.utf8) else { return }
+            note.changed(to: value)
+        }
         view.enclosingScrollView?.verticalRulerView?.needsDisplay = true
         app.changed()
         app.refreshSearchResults()
+    }
+
+    private func updateASCIIMetrics(replacing range: NSRange, with text: String, delta: Int) {
+        func firstStart(after offset: Int) -> Int {
+            var low = 0
+            var high = lineStarts.count
+            while low < high {
+                let middle = (low + high) / 2
+                if lineStarts[middle] <= offset { low = middle + 1 } else { high = middle }
+            }
+            return low
+        }
+        let lower = firstStart(after: range.location)
+        let upper = firstStart(after: NSMaxRange(range))
+        let newStarts = text.utf8.enumerated().compactMap { $0.element == 10 ? range.location + $0.offset + 1 : nil }
+        lineStarts.removeSubrange(lower..<upper)
+        lineStarts.insert(contentsOf: newStarts, at: lower)
+        for index in (lower + newStarts.count)..<lineStarts.count { lineStarts[index] += delta }
+        characterCount += delta
     }
 
     func textViewDidChangeSelection(_ notification: Notification) {

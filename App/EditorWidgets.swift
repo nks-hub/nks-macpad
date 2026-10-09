@@ -179,7 +179,9 @@ final class EditorTextView: NSTextView, NSTextStorageDelegate {
 
     func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions,
                      range editedRange: NSRange, changeInLength delta: Int) {
-        if editedMask.contains(.editedCharacters) { owner?.synchronize(self) }
+        if editedMask.contains(.editedCharacters) {
+            owner?.synchronize(self, editedRange: editedRange, changeInLength: delta)
+        }
     }
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {

@@ -3,7 +3,8 @@ import MacPadCore
 
 final class TextDocument: NSDocument {
     let id: UUID
-    var text = "" { didSet { dirtyCache = nil } }
+    var text = "" { didSet { dirtyCache = nil; utf16Length = (text as NSString).length } }
+    private(set) var utf16Length = 0
     var savedText: String? { didSet { dirtyCache = nil } }
     var format = TextFormat() { didSet { dirtyCache = nil } }
     var savedFormat: TextFormat? { didSet { dirtyCache = nil } }
@@ -28,7 +29,7 @@ final class TextDocument: NSDocument {
     override var isDocumentEdited: Bool {
         if externalChange { return true }
         if let dirtyCache { return dirtyCache }
-        let dirty = savedText.map { !text.utf8.elementsEqual($0.utf8) || format != savedFormat } ?? !text.isEmpty
+        let dirty = savedText.map { text.utf8.count != $0.utf8.count || !text.utf8.elementsEqual($0.utf8) || format != savedFormat } ?? !text.isEmpty
         dirtyCache = dirty
         return dirty
     }
@@ -68,6 +69,11 @@ final class TextDocument: NSDocument {
 
     func changed(to value: String) {
         text = value
+        revision &+= 1
+    }
+
+    func replaceText(in range: Range<String.Index>, with replacement: String) {
+        text.replaceSubrange(range, with: replacement)
         revision &+= 1
     }
 
