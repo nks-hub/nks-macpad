@@ -61,6 +61,19 @@ final class TextFileTests: XCTestCase {
         XCTAssertTrue(try JSONDecoder().decode(TextFormat.self, from: oldFormat).hasBOM)
     }
 
+    func testBOMOverridesPreviouslySelectedEncoding() throws {
+        let text = "Příliš 📝\n"
+        for (current, previous) in [(TextEncoding.utf16BE, TextEncoding.utf16LE),
+                                    (.utf8BOM, .windows1250)] {
+            let format = TextFormat(encoding: current, lineEnding: .lf)
+            let bytes = try TextFileCodec.encode(text, format: format)
+            let decoded = try TextFileCodec.decode(bytes, encoding: previous)
+            XCTAssertEqual(decoded.text, text)
+            XCTAssertEqual(decoded.format, format)
+            XCTAssertEqual(try TextFileCodec.encode(decoded.text, format: decoded.format), bytes)
+        }
+    }
+
     func testInvalidUTF8AndUTF16AreNotSilentlyRepaired() {
         for data in [Data([0xC0, 0xAF]), Data([0xFF]), Data([0xED, 0xA0, 0x80])] {
             XCTAssertThrowsError(try TextFileCodec.decode(data))

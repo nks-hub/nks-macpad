@@ -45,8 +45,9 @@ public enum TextFileCodec {
     private static let windows1250 = String.Encoding(rawValue:
         CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.windowsLatin2.rawValue)))
 
+    /// A recognized BOM overrides the fallback encoding supplied for BOMless files.
     public static func decode(_ data: Data, encoding: TextEncoding? = nil) throws -> DecodedText {
-        let detected: TextEncoding
+        let detected: TextEncoding?
         if data.starts(with: [0xEF, 0xBB, 0xBF]) {
             detected = .utf8BOM
         } else if data.starts(with: [0xFF, 0xFE]) {
@@ -54,13 +55,13 @@ public enum TextFileCodec {
         } else if data.starts(with: [0xFE, 0xFF]) {
             detected = .utf16BE
         } else {
-            detected = .utf8
+            detected = nil
         }
-        let selected = encoding ?? detected
+        let selected = detected ?? encoding ?? .utf8
         var payload = data
-        if (selected == .utf8 || selected == .utf8BOM), detected == .utf8BOM {
+        if detected == .utf8BOM {
             payload.removeFirst(3)
-        } else if (selected == .utf16LE || selected == .utf16BE), selected == detected {
+        } else if detected != nil {
             payload.removeFirst(2)
         }
         let text: String
