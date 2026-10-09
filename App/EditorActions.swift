@@ -24,6 +24,7 @@ extension EditorWindowController {
             if self.activeID == note.id { self.activeID = self.notes.first?.id }
             if self.notes.isEmpty { self.notes.append(TextDocument()); self.activeID = self.notes[0].id }
             self.refresh()
+            self.app.changed()
             self.app.flushSession { stored in
                 self.busyClosing = false
                 self.app.lockEditing(false)

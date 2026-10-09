@@ -4,6 +4,36 @@ import MacPadCore
 
 final class LifecycleReviewTests: XCTestCase {
     @MainActor
+    func testClosingInactiveTabPersistsRemovalBehindOlderSnapshot() async throws {
+        _ = NSApplication.shared
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let file = directory.appendingPathComponent("closed.txt")
+        try Data("closed content".utf8).write(to: file)
+        let app = AppDelegate(sessionDirectory: directory.appendingPathComponent("session"))
+        let editor = app.makeWindow()
+        let closed = TextDocument()
+        try closed.load(file)
+        editor.addNote(closed)
+        let active = TextDocument()
+        editor.addNote(active)
+        let gate = DispatchSemaphore(value: 0)
+        app.diskQueue.async { gate.wait() }
+        app.flushSession()
+        let sender = NSMenuItem()
+        sender.representedObject = closed.id
+        editor.closeNote(sender)
+        XCTAssertTrue(editor.busyClosing)
+        gate.signal()
+        let finished = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in !editor.busyClosing }, object: nil)
+        await fulfillment(of: [finished], timeout: 5)
+        let recovered = try app.sessionStore.load()
+        XCTAssertFalse(recovered?.windows.flatMap(\.notes).contains { $0.id == closed.id } ?? true)
+        XCTAssertEqual(editor.activeID, active.id)
+    }
+
+    @MainActor
     func testRepeatedFlushRequestsUseLatestSnapshot() async throws {
         _ = NSApplication.shared
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
