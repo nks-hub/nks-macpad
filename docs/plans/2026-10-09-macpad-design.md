@@ -1,6 +1,6 @@
 # MacPad: analýza a návrh
 
-Datum: 9. 10. 2026. Dokument popisuje cílové chování aplikace. Implementace již běží; aktuální stav je v README a TODO. Níže uvedené požadavky nejsou tvrzení o ověřené hotové aplikaci. Testování novějších změn je nyní odložené.
+Datum: 9. 10. 2026, aktualizováno 10. 10. 2026. Dokument popisuje cílové chování aplikace. Implementace a testování již běží; aktuální stav je v README, TODO a záznamu ověření. Níže uvedené požadavky nejsou tvrzení o úplně dokončené přejímce.
 
 Revize 2 rozšiřuje původní návrh. Notepad je referencí pro známé ovládání a práci se soubory. Nové funkce se řídí přínosem pro poznámky; nemusí kopírovat Windows.
 
@@ -189,6 +189,6 @@ Sestavení navrhuji přes projekt generovaný XcodeGen z verzovaného project.ym
 
 ## Rozhodnutí před vydáním
 
-Bundle identifier je com.nkshub.macpad; společná knihovna používá com.nkshub.macpad.core. Konečný název a veřejnou licenci je potřeba potvrdit před zveřejněním. Podpis musí používat skutečně dostupnou a oprávněnou Developer ID identitu; žádná identita se nepřebírá jen podle toho, že ji používá jiný projekt.
+Bundle identifier je com.nkshub.macpad; společná knihovna používá com.nkshub.macpad.core. Název je MacPad a licence MIT. Podpis musí používat skutečně dostupnou a oprávněnou Developer ID identitu; žádná identita se nepřebírá jen podle toho, že ji používá jiný projekt.
 
 Navrhuji přímou distribuci podepsané a notarizované aplikace, nejprve pro Apple Silicon. App Store, sandbox, Intel a automatické aktualizace nejsou automatickou součástí první verze. Jejich případné doplnění vyžaduje ověření dopadu na přístup k souborům a umístění obnovovacích dat. Nejnižší verze macOS je návrh, dokud na ní neproběhnou testy.

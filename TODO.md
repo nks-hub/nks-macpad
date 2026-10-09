@@ -2,11 +2,11 @@
 
 Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritéria jsou v [plánu](PLAN.md).
 
-Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Testování je nyní odložené; otevřené položky mohou mít hotový kód, ale chybí jejich úplné ověření. Starší běh 41 testů nepotvrzuje novější úpravy UI, schránky, zkratek a asynchronního otevírání.
+Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Po úplném review a opravách prošlo 64 automatických testů na Macu. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
 
 ## Před pokračováním v ověřování
 
-- [ ] Až bude testování znovu povolené, sestavit aktuální zdroje a spustit připravené testy.
+- [x] Sestavit zdroje odpovídající 7589e72 a spustit připravené testy: 64 prošlo.
 - [ ] Ověřit nové nastavení, změnu zkratky, vkládání CRLF textu a otevírání souborů na pozadí včetně zrušení.
 - [ ] Ověřit klikání, zavírání a přetažení nových karet, nabídky a světlé i tmavé vykreslení.
 
@@ -81,7 +81,7 @@ Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Testování je
 ## F. Veřejné vydání
 
 - [x] Nastavit identifikátory com.nkshub.macpad a com.nkshub.macpad.core.
-- [ ] Rozhodnout konečný název, licenci a cílový veřejný repozitář.
+- [x] Zvolit MacPad, licenci MIT a veřejný repozitář nks-hub/nks-macpad.
 - [ ] Připravit release sestavení a potvrdit oprávněnou podpisovou identitu.
 - [ ] Podepsat, notarizovat a ověřit balíček přes Gatekeeper na běžné instalaci.
 - [ ] Ověřit P15 včetně aktualizace se zachováním konceptů a dokumentů.
