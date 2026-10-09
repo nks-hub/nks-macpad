@@ -10,6 +10,7 @@ Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritér
 - [x] Ověřit dostupnost vzdáleného Macu, Xcode, Swiftu a odpověď VNC služby.
 - [x] Sepsat návrh, varianty technologie, pravidla ukládání a rozsah první verze.
 - [x] Rozdělit implementaci na etapy s měřitelnými kritérii přijetí.
+- [x] Zpracovat druhou iteraci: rozšíření E01 až E08, podobu UI a navazující návrhy R01 až R04.
 
 ## A. Reference a technická zkouška
 
@@ -19,6 +20,7 @@ Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritér
 - [ ] Vytvořit AppKit projekt, opakovatelný build a XCTest targety.
 - [ ] Ověřit dvě karty, NSDocument, NSTextView, oddělené undo a bezpečné explicitní ukládání.
 - [ ] Funkčním pokusem vybrat jediný způsob obnovy obsahu a vyřešit ukončení bez přepsání souboru.
+- [ ] Ověřit horní lištu, registraci a kolize globální zkratky a návrat fokusu rychlé poznámky.
 
 ## B. Editor a soubory
 
@@ -47,16 +49,26 @@ Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritér
 - [ ] Projít souvislou práci s poznámkami včetně ukončení a obnovy, P01 až P11.
 - [ ] Změřit první výkonové výsledky release buildu a odstranit blokující chyby.
 
-## E. Verze 1.0
+## E. Rozšířená verze 1.0
 
 - [ ] Doplnit pořadí karet, přesun mezi okny a obnovu více oken.
 - [ ] Doplnit nedávné soubory, přetažení a tisk.
-- [ ] Doplnit přechod na řádek, písmo a přesný stavový řádek nad Unicode.
+- [ ] Doplnit přechod na řádek, volitelná čísla řádků, písmo a stavový řádek včetně výběru nad Unicode.
 - [ ] Doplnit Windows-1250, explicitní převody a rozhodnutí pro smíšené konce řádků.
 - [ ] Dokončit češtinu a angličtinu, VoiceOver, kontrast a ovládání bez myši.
 - [ ] Ověřit Home/End, výběr a modifikátory na fyzické Mac i Windows klávesnici.
 - [ ] Ověřit P12 až P14, dlouhé řádky, větší soubory a navržené výkonové cíle.
 - [ ] Otestovat nejnižší podporovaný macOS; Intel podporovat pouze po samostatném ověření.
+- [ ] E02: doplnit připnutí a vlastní názvy konceptů se zachováním po restartu; ověřit P17.
+- [ ] E03: přidat přepínač karet a vyhledání existujících příkazů menu; ověřit P18.
+- [ ] E04: přidat hledání ve všech otevřených textech s kontrolou revizí a zrušením; ověřit P19.
+- [ ] E05: přidat znovuotevření zavřeného souboru bez archivace zahozených změn a mazání seznamů; ověřit P20.
+- [ ] E06: přidat Uložit vše s pravdivým výsledkem po zrušení nebo částečném selhání; ověřit P21.
+- [ ] E07: přidat datum a čas, duplikaci, přesun a úpravy označených řádků s jedním undo; ověřit P22.
+- [ ] E08: přidat režim soustředění a dočasné okno navrchu s dostupným vypnutím; ověřit P23.
+- [ ] E01: přidat rychlou poznámku ze systémové lišty a zkratky nad stejným dokumentovým stavem; ověřit P16.
+- [ ] Ověřit běžné psaní, 20 karet, výsledky hledání a rychlou poznámku v malé šířce, obou motivech a s velkým písmem.
+- [ ] Změřit odezvu rychlé poznámky a hledání napříč kartami podle doplněných výkonových cílů.
 
 ## F. Veřejné vydání
 
@@ -67,3 +79,10 @@ Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritér
 - [ ] Zkontrolovat obsah i historii Gitu na citlivé údaje a přiložené nechtěné soubory.
 - [ ] Doplnit skutečně ověřený návod k sestavení a instalaci, licenci a známá omezení.
 - [ ] Zveřejnit repozitář a první release až v rámci výslovného zadání k publikaci.
+
+## G. Návrhy pro verzi 1.1
+
+- [ ] R01: rozdělit okno na dva pohledy se sdílenou identitou dokumentu; ověřit P24.
+- [ ] R02: vybrat parser a přidat volitelný bezpečný náhled Markdownu; ověřit P25.
+- [ ] R03: přidat volitelnou historii uložených verzí s limity, mazáním a obnovou do nového konceptu; ověřit P26.
+- [ ] R04: přidat porovnání externích změn s kontrolou aktuálnosti revizí; ověřit P27.

@@ -2,13 +2,23 @@
 
 Datum: 9. 10. 2026. Rozsah této etapy: analýza, plán, TODO a čistý lokální Git. Implementace přijde v další etapě. Níže uvedená technická a produktová rozhodnutí jsou návrh pro implementaci, nikoli tvrzení o hotové aplikaci.
 
+Revize 2 rozšiřuje původní návrh na žádost uživatele. Notepad je referencí pro známé ovládání a práci se soubory. Nové funkce se řídí přínosem pro poznámky; nemusí kopírovat Windows. Aktuální zadání zůstává pouze plánovací.
+
 ## Co má uživatel dostat
 
 Malý editor pro rychlé poznámky a běžné textové soubory. Po spuštění lze ihned psát. Více poznámek je v kartách. Uložení má jednoznačný výsledek. Zavření aplikace zachová rozpracovanou relaci a po návratu pokračujeme na stejném místě.
 
 Vzhled vychází z rozložení Notepadu: nahoře karty a tlačítko plus, velká textová plocha, dole nenápadný stavový řádek. Ovládací prvky oken, dialogy a horní systémové menu zůstávají nativní pro macOS. Bez bočního seznamu projektů a bez úvodního průvodce. Nová instalace otevře jednu prázdnou kartu.
 
-První verze zpracovává čistý text. Markdown lze otevřít a upravovat jako text; vykreslování, AI, účty, cloudová synchronizace, spolupráce a pluginy nejsou součástí navrženého rozsahu. Novější Notepad některé z těchto funkcí má, takže cílem není úplná kopie všech jeho aktuálních funkcí.
+První verze zpracovává čistý text. Markdown lze otevřít a upravovat jako text; jeho volitelný náhled je navržený pro verzi 1.1. AI, účty, vlastní cloudová synchronizace, spolupráce a pluginy zatím nejsou v plánu. Běžný soubor lze uložit do uživatelovy synchronizované složky, ale aplikace tím neslibuje souběžné úpravy bez konfliktů.
+
+## Výsledek druhé iterace
+
+Zvažované směry byly lehký editor s funkcemi pro každodenní poznámky, rozsáhlejší správce poznámek se složkami a štítky a vývojářský editor. Pro tento projekt doporučuji první směr: rozšiřuje přímo psaní, hledání a ukládání. Správce poznámek by přidal další knihovnu vedle běžných souborů; vývojářský editor by přesunul pozornost k práci s kódem.
+
+V prvním průchodu byly vybrány časté situace: zachytit myšlenku během jiné práce, najít text mezi mnoha kartami, udržet důležité poznámky nahoře a bezpečně uložit více dokumentů. Ve druhém průchodu se omezil počet trvale viditelných prvků. Ve třetím se prověřily konflikty: rychlá poznámka musí používat stejnou obnovu, vrácení zavřené karty nesmí vracet výslovně zahozený obsah a hromadné uložení nesmí tvrdit, že uložilo soubory, u kterých selhalo.
+
+Verze 1.0 proto dostává osm konkrétních rozšíření E01 až E08. Čtyři náročnější návrhy R01 až R04 jsou oddělené pro verzi 1.1 a nejsou podmínkou prvního veřejného vydání.
 
 ## Co je doložené a co ještě změřit
 
@@ -30,6 +40,74 @@ Lokálně byla zjištěna verze Windows Notepadu 11.2607.14.0. Jeho GUI, aktuál
 | Zobrazení | Zalamování, přiblížení, světlý/tmavý/systémový vzhled | Písmo, stavový řádek: řádek, sloupec, znaky, kódování, konce řádků |
 | Formát souboru | UTF-8 s BOM i bez BOM, UTF-16 s BOM; CRLF a LF | Ruční Windows-1250, UTF-16 BE/LE, smíšené konce řádků a chyby převodu |
 | Ovládání | Klávesnice i myš, macOS zkratky a vybrané místní Ctrl aliasy | Ověřená mapa zkratek včetně externí Windows klávesnice |
+
+Tato tabulka určuje základ editoru. Následující rozšíření patří navíc do verze 1.0; první interní použitelný milník A až D může vzniknout ještě bez nich.
+
+## Rozšíření pro verzi 1.0
+
+| ID | Funkce | Přesné chování a hranice |
+| --- | --- | --- |
+| E01 | Rychlá poznámka | Volitelná ikona v horní liště macOS otevře malé psací okno. Uživatel si může přiřadit globální zkratku. Koncept se ukládá stejnou cestou jako karty a lze jej přesunout do hlavního okna. |
+| E02 | Připnuté a pojmenované karty | Připnutí udrží kartu vlevo; vlastní název konceptu přežije restart bez nutnosti vytvořit soubor. Připnutí nebrání výslovnému zavření. Název souborové karty vychází ze souboru, nikoli z jeho tichého přejmenování. |
+| E03 | Rychlý přepínač a nabídka příkazů | Cmd+K hledá kartu podle názvu, Cmd+Shift+P hledá dostupný příkaz. Stejný malý panel má jasně označený režim; výsledky lze vybrat klávesnicí i myší. |
+| E04 | Hledání ve všech otevřených kartách | Cmd+Shift+F zobrazí výskyty s názvem karty a krátkým okolím. Výběr přejde na správné místo. Zahrnuje i neuložené texty ve všech oknech, neprohledává celý disk. |
+| E05 | Znovu otevřít zavřenou kartu | Cmd+Shift+T vrátí naposledy zavřený soubor a polohu kurzoru. Uchovává nejvýše 20 odkazů v aktuálním běhu aplikace. Výslovně zahozený neuložený text se nearchivuje. |
+| E06 | Uložit vše | Cmd+Option+S uloží změněné dokumenty a pro nepojmenované postupně nabídne dialog. Výsledek rozliší uložené, neuložené a chybové dokumenty. |
+| E07 | Drobné úpravy textu | Vložit datum a čas, duplikovat řádek, posunout řádek nahoru/dolů, seřadit označené řádky a odstranit přesně duplicitní označené řádky. Každý příkaz tvoří jeden krok zpět. |
+| E08 | Soustředění a okno navrchu | Režim soustředění skryje pás karet a stavový řádek. Samostatná volba drží aktuální okno nad běžnými okny. Oba stavy mají dostupný příkaz pro vypnutí. |
+
+Rychlá poznámka funguje, když aplikace běží. Cmd+Q skutečně ukončí i položku v horní liště a zkratku; automatické spouštění po přihlášení se nezapíná. Opakované vyvolání aktivuje již otevřenou rychlou poznámku, nevytváří prázdné kopie. Escape ji skryje až po úspěšném uložení konceptu a vrátí fokus původní aplikaci; chyba zápisu ponechá text viditelný. Přesun do hlavního okna zachová stejnou identitu dokumentu. Při vypnuté obnově se změny řeší dialogem stejně jako v hlavním okně. Globální zkratka pouze vyvolává okno, nesleduje psaný text. Její registraci a kolize je nutné ověřit v technické zkoušce; případnou nepodporovanou kombinaci odmítnout s vysvětlením.
+
+Pojmenování konceptu mění pouze jeho metadata, nikoli obsah. Při prvním uložení se nabídne tento název. Připnutí, vlastní název a pořadí jsou součástí obnovované relace. Znovuotevření zavřeného souboru znovu načte aktuální diskovou verzi a při chybějícím souboru oznámí chybu; nesmí vydávat odkaz za zálohu textu. Zahozený koncept bez souboru se touto funkcí nevrátí. Seznamy nedávných a zavřených souborů lze vymazat.
+
+Hledání napříč kartami běží nad revizemi textů. Změna obsahu zneplatní staré výsledky; před skokem se ověří, že výskyt stále odpovídá. Zavření karty ji odstraní z výsledků. Panel lze zavřít jedním Escape a vrátit fokus do editoru. Hromadné nahrazování napříč kartami do verze 1.0 nepatří; běžné nahrazování je nad aktuálním dokumentem.
+
+Uložit vše je posloupnost bezpečných uložení, nikoli jedna společná transakce. Zrušení dialogu zastaví další ukládání a ponechá již uložené dokumenty uložené. Chyba nabídne zastavit nebo pokračovat; žádný dokument se neoznačí jako uložený před potvrzením zápisu své revize. Funkce nikdy sama neukončuje aplikaci.
+
+Příkazy pro řazení a odstraňování duplicit jsou dostupné jen při výběru textu; pracují s celými řádky, kterých se výběr dotýká. Řazení je stabilní, používá jazyk rozhraní a zachová prázdné řádky. Odstranění duplicit zachová první přesný výskyt a nemění velikost písmen ani mezery. Datum a čas se vloží podle systémového formátu. Žádná úprava se nespouští sama při uložení.
+
+## Podoba aplikace
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│ ● ● ●   Připnutá poznámka │ Nákup • │ text.txt │ + │ ▾      │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│ Sem lze ihned psát.                                         │
+│                                                            │
+│                                                            │
+├────────────────────────────────────────────────────────────┤
+│ Ř. 4, sl. 12    238 znaků          100 %   UTF-8   CRLF      │
+└────────────────────────────────────────────────────────────┘
+```
+
+Jde o schematické rozložení, ne hotový grafický návrh. Horní systémové menu macOS zůstává mimo okno. Titulková oblast respektuje místo pro systémová tlačítka. Tečka u názvu označuje neuloženou změnu; přístupný název karty sdělí totéž slovy.
+
+- Základní pohled tvoří karty, editor a stavový řádek. Bez trvale otevřeného postranního panelu a bez velké lišty ikon.
+- Pás karet má plus, připnuté karty vlevo, přesun myší a nabídku všech karet při nedostatku místa. Dlouhé názvy se zkrátí, úplný název je dostupný v přepínači a nápovědě.
+- Textová plocha používá systémové neproporcionální písmo, čitelný řádkový odstup a malé okraje. Písmo a velikost lze změnit; výběr textu zůstává nativní.
+- Světlý motiv má klidné neutrální pozadí, tmavý respektuje systémový vzhled. Barva zvýraznění vychází ze systému. Materiály a animace respektují omezení průhlednosti a pohybu.
+- Hledání v kartě otevře úzký řádek pod kartami. Hledání napříč kartami otevře dočasný boční panel s výsledky. Panel příkazů se zobrazí jen při vyvolání.
+- Stavový řádek ukazuje řádek, sloupec, počet znaků nebo rozsah výběru, přiblížení, kódování a konce řádků. Údaje pro celý text nebo výběr jsou jasně rozlišené.
+- Při zúžení okna se méně důležité údaje skryjí do nabídky; psací plocha má přednost. Čísla řádků jsou volitelná a ve výchozím stavu vypnutá.
+- Rychlá poznámka je kompaktní okno s textem a příkazy Otevřít v hlavním okně a Uložit jako. Nevytváří druhý typ dokumentu ani vlastní knihovnu poznámek.
+- Nastavení má tři části: Editor, Vzhled a Obnova a zkratky. Rozšířené volby se nevkládají mezi text a běžné psaní.
+- Režim okna navrchu má viditelný přepínač. Neslibuje překrytí zabezpečených systémových oken ani cizích aplikací na celé obrazovce; při obnovení relace je vypnutý.
+
+Prázdná karta obsahuje jen nenápadný název Nová poznámka. Chyba uložení se ukáže u konkrétního dokumentu s volbou Opakovat nebo Uložit jako. U obnovovaných konceptů nesmí stav „koncept zachován“ vypadat jako potvrzení uložení do souboru.
+
+## Navazující rozšíření pro verzi 1.1
+
+| ID | Funkce | Hranice návrhu |
+| --- | --- | --- |
+| R01 | Dva texty vedle sebe | Rozdělení jednoho okna na dva editory s jasným aktivním panelem. Při dvou pohledech na stejný dokument sdílet text a undo, nikoli vytvořit dvě zapisující kopie. |
+| R02 | Volitelný náhled Markdownu | Text zůstává obyčejným .md souborem; náhled ukáže nadpisy, seznamy a úkoly vedle něj. Bez skrytého přepisu syntaxe nebo přepnutí do rich textu. |
+| R03 | Lokální historie uložených verzí | Volitelně uchovat předchozí úspěšně uložené verze souboru. Výběr otevře starší verzi jako nový neuložený dokument; nepřepíše aktuální práci. |
+| R04 | Porovnání externí změny | Při konfliktu ukázat vlastní text a diskovou verzi s rozdíly po řádcích. Zachovat volby načíst, uložit kopii nebo potvrzeně přepsat; bez automatického slučování. |
+
+Náhled Markdownu nesmí spouštět vložené HTML nebo skripty ani sám načítat vzdálené obrázky a další zdroje. Odkazy otevře systémový prohlížeč až po kliknutí a kontrole schématu. Konkrétní parser vybrat až při implementaci podle podpory syntaxe a licence; omezení běhových závislostí v návrhu platí pro verzi 1.0, případná výjimka pro náhled musí být odůvodněná.
+
+Historie je ve výchozím stavu vypnutá a oddělená od automatické záchrany aktuálních konceptů. Při zapnutí navrhuji nejvýše 20 verzí na soubor, stáří 30 dní a celkově 100 MiB; při dosažení limitu odstranit nejstarší historické verze, nikdy aktuální koncept. Dostupné musí být Vymazat historii souboru a Vymazat vše. Výslovné zahození neuložených změn je do historie nepřidá; již uložené verze se odstraňují příkazem pro historii. Selhání archivace nesmí být skryté za úspěchem uložení souboru a nesmí zablokovat záchranu aktuálního textu.
 
 ## Pravidla, která nesmějí porušit data
 
@@ -73,6 +151,8 @@ Uložit jako nabídne název odvozený z obsahu bez neplatných znaků. Výchoz�
 
 Navržený základ: Cmd+N a Cmd+T nová karta, Cmd+Shift+N nové okno, Cmd+O otevřít, Cmd+S uložit, Cmd+Shift+S uložit jako, Cmd+W zavřít kartu, Cmd+Shift+W zavřít okno, Cmd+Q ukončit. Cmd+F hledat, Cmd+Option+F nahradit, Cmd+G další výskyt, Cmd+Shift+G předchozí. Zpět Cmd+Z, znovu Cmd+Shift+Z.
 
+Rozšíření přidávají Cmd+K pro přepnutí karty, Cmd+Shift+P pro příkazy, Cmd+Shift+F pro hledání napříč kartami, Cmd+Shift+T pro znovuotevření souboru a Cmd+Option+S pro Uložit vše. Cmd+P zachová nativní tisk. Escape nejprve zavře aktivní panel, v režimu soustředění bez otevřeného panelu vrátí běžné rozhraní; nesmí potvrdit rozpracovaný systémový dialog.
+
 Kvůli návykům z Windows navrhuji místní Ctrl aliasy pro N/T/O/S/W/F/H/A/C/V/X/Z/Y a Ctrl+Tab / Ctrl+Shift+Tab. Ctrl+G přejde na řádek, zatímco Cmd+G ponechá macOS význam dalšího hledání. Alias se zpracuje jen v hlavním editoru a nesmí zachytit systémové dialogy, zadávání přes IME ani kombinace Ctrl+Option používané VoiceOverem. Ctrl+A/E a další emacsové kombinace mohou mít s Windows aliasy jiný význam; tuto odlišnost výslovně ověřit. Žádný globální přepis klávesnice ani požadavek na oprávnění Accessibility pro samotný editor.
 
 Home/End na rozšířené klávesnici mají podle navržené parity přecházet na začátek/konec řádku, Ctrl+Home/End na začátek/konec dokumentu. Shift rozšíří výběr. Výsledek porovnat se skutečným Notepadem, včetně zalomených řádků. Na Mac klávesnici zachovat i Cmd+šipky a Option+šipky. VNC nenahradí fyzické ověření všech kombinací.
@@ -87,7 +167,7 @@ Stavový řádek a karty musí být přístupné přes VoiceOver. Změnu neozna�
 | SwiftUI + vložený NSTextView | Pohodlná deklarace okolního rozhraní | Další synchronizace výběru, fokusu a textového stavu mezi dvěma UI systémy |
 | Webový editor v Tauri nebo Electronu | Sdílený webový základ při budoucí jiné platformě | Další běhové vrstvy a více vlastní práce na nativním chování |
 
-Zvolit Swift a AppKit bez běhových závislostí třetích stran. Použít NSTextView v režimu čistého textu, NSScrollView, UndoManager a nativní dialogy. Využít NSDocument pro čtení, explicitní ukládání a změnový stav; nevytvářet paralelní vlastní souborový framework. [Apple dokumentuje NSDocument](https://developer.apple.com/documentation/appkit/nsdocument) jako základ dokumentových aplikací a [NSTextView](https://developer.apple.com/documentation/appkit/nstextview) jako textový editor.
+Pro verzi 1.0 zvolit Swift a AppKit bez běhových závislostí třetích stran. Použít NSTextView v režimu čistého textu, NSScrollView, UndoManager a nativní dialogy. Využít NSDocument pro čtení, explicitní ukládání a změnový stav; nevytvářet paralelní vlastní souborový framework. [Apple dokumentuje NSDocument](https://developer.apple.com/documentation/appkit/nsdocument) jako základ dokumentových aplikací a [NSTextView](https://developer.apple.com/documentation/appkit/nstextview) jako textový editor.
 
 Výchozí automatické ukládání přímo do souboru nezapínat: [autosavesInPlace](https://developer.apple.com/documentation/appkit/nsdocument/autosavesinplace) by odporovalo požadované obnově bez změny souboru. V první technické zkoušce ověřit NSDocument s kartami a vlastním ukončením aplikace. Obnovu obsahu má vlastnit jediná cesta, plánovaný SessionStore; vedle něj nesmí současně vzniknout nezávislá obnova téhož obsahu přes AppKit. Pokud vestavěné ukládání konceptů splní celý kontrakt, má přednost a SessionStore bude pouze seznam karet. Rozhodnutí uzavřít v první etapě na funkčním pokusu.
 
@@ -95,9 +175,11 @@ Navržené části, vznikající až při implementaci svého úkolu:
 
 - TextDocument: text, identita souboru, revize, kódování, konce řádků, undo a explicitní zápis.
 - EditorWindowController: okno, vlastnictví karet, fokus, příkazy menu a editoru.
-- SessionStore: konzistentní obnova relace, pořadí karet a podle výsledku technické zkoušky obsah konceptů.
+- SessionStore: konzistentní obnova relace, pořadí, připnutí a vlastní názvy karet a podle výsledku technické zkoušky obsah konceptů.
 - TextFileCodec: striktní převod mezi bajty a textem; malé čisté funkce s testovacími soubory.
 - Nastavení přes UserDefaults: vzhled, písmo, zalamování a obnova; vlastní text do UserDefaults neukládat.
+
+Rychlé poznámky používají TextDocument a stejnou obnovu jako hlavní okna. Panel příkazů vyvolává stejné akce jako menu včetně jejich povoleného stavu. Hledání sdílí pravidla aktuálního vyhledávání a bere obsah přímo z otevřených dokumentů; první verze nepotřebuje databázi ani trvalý index. Uložit vše používá existující příkaz uložení dokumentu. Rozšíření nezakládají vlastní kopie dokumentového stavu.
 
 UI a změny textu zůstávají na hlavním vlákně. Diskový zápis běží sériově mimo něj nad neměnnou revizí. O dokončení rozhoduje hlavní vlákno porovnáním revize. Pro sledování externích změn použít možnosti NSDocument a koordinovaný přístup k souborům; přístup neopakovat v další vrstvě.
 

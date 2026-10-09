@@ -1,10 +1,12 @@
 # MacPad
 
-MacPad je připravovaný textový editor pro macOS s kartami a obnovou poznámek podle Poznámkového bloku ve Windows 11.
+MacPad je připravovaný textový editor pro macOS, který rozšiřuje ovládání známé z Poznámkového bloku ve Windows 11 o rychlé poznámky, připnuté karty a hledání napříč otevřenými texty.
 
 Projekt je ve fázi analýzy a plánování. Aplikace ani instalační balík zatím neexistují. Pracovní název je MacPad.
 
 Základ návrhu: otevřít, rovnou psát, snadno uložit a po dalším spuštění najít rozepsané poznámky. Obnova relace nesmí sama přepisovat původní soubory.
+
+Plán verze 1.0 navíc zahrnuje rychlou poznámku z horní lišty macOS, vlastní názvy konceptů, přepínač karet a příkazů, návrat k zavřeným souborům, Uložit vše, jednoduché úpravy řádků a režim soustředění. Rozšířené funkce se zobrazují podle potřeby. Rozdělený pohled, náhled Markdownu, historie uložených verzí a porovnání změn jsou oddělené návrhy pro verzi 1.1.
 
 - [Analýza a návrh chování](docs/plans/2026-10-09-macpad-design.md)
 - [Plán implementace a ověření](PLAN.md)
