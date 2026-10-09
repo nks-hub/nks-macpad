@@ -1,0 +1,49 @@
+# Local tools and instructions
+AGENTS.md
+AGENTS.override.md
+.agents/
+.claude/
+.codex/
+.idea/
+.vscode/
+.scratch/
+.local/
+
+# macOS and Xcode user state
+.DS_Store
+._*
+xcuserdata/
+*.xcuserstate
+DerivedData/
+.build/
+.swiftpm/
+build/
+dist/
+*.xcarchive/
+*.xcresult/
+*.app/
+*.dmg
+*.pkg
+*.dSYM/
+*.log
+
+# Credentials and signing material
+.env
+.env.*
+!.env.example
+*.local.xcconfig
+*.p12
+*.pfx
+*.p8
+*.pem
+*.key
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.keychain
+*.keychain-db
+
+# Private test evidence and editor recovery data
+artifacts/
+test-results/
+SessionData/
