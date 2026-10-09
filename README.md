@@ -90,7 +90,15 @@ MacPad nevyžaduje účet, nepřidává vlastní cloudovou synchronizaci a neode
 bash scripts/build.sh test
 ```
 
-Při review implementace prošlo na macOS 15.7.4 **64 automatických testů**: 37 testů souborové vrstvy a obnovy a 27 testů AppKitu a životního cyklu. Opravy se týkaly mimo jiné zahozených změn při hromadném ukládání, hranic Unicode a řádků, obnovy posunu, kódování a rušení otevíraných souborů.
+Při review implementace prošlo na macOS 15.7.4 **76 automatických testů** v konfiguraci Release: 37 testů souborové vrstvy a obnovy a 39 testů AppKitu, životního cyklu a výkonu. Opravy se týkaly mimo jiné zahozených změn při hromadném ukládání, hranic Unicode a řádků, obnovy posunu, kódování a rušení otevíraných souborů.
+
+Na Apple M1 Pro trvalo otevření 50 MiB textu s krátkými ASCII řádky v mediánu 643 ms a vložení znaku na konec 9 ms. Měření úpravy nezahrnuje následné vykreslení. Postup, podmínky a výsledky pro další velikosti jsou v [záznamu měření](docs/VALIDATION.md#měření-výkonu).
+
+Pro testy v konfiguraci Release:
+
+```sh
+CONFIGURATION=Release bash scripts/build.sh test
+```
 
 Přehled konkrétních výsledků a zbývajících mezer je v [záznamu ověření](docs/VALIDATION.md). Automatické testy nenahrazují ověření fyzické klávesnice, VoiceOveru ani všech podporovaných verzí macOS. Podepisování a notarizace zůstávají před veřejným distribučním vydáním.
 

@@ -2,13 +2,15 @@
 
 Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritéria jsou v [plánu](PLAN.md).
 
-Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Po úplném review a opravách prošlo 64 automatických testů na Macu. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
+Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Po úplném review a opravách prošlo 76 automatických testů na Macu. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
 
 ## Před pokračováním v ověřování
 
-- [x] Sestavit zdroje odpovídající 7589e72 a spustit připravené testy: 64 prošlo.
+- [x] Sestavit zdroje odpovídající b39439c v Release a spustit připravené testy: 76 prošlo.
 - [ ] Ověřit nové nastavení, změnu zkratky, vkládání CRLF textu a otevírání souborů na pozadí včetně zrušení.
 - [ ] Ověřit klikání, zavírání a přetažení nových karet, nabídky a světlé i tmavé vykreslení.
+- [x] Zachytit skutečné světlé a tmavé UI a ověřit výběr karty, výsledek hledání, rychlou poznámku a uložení přes GUI.
+- [ ] Prověřit ochranu obnovy při vynuceném spuštění více procesů nad stejnou datovou složkou.
 
 ## Příprava
 
@@ -55,7 +57,7 @@ Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Po úplném re
 - [ ] Doplnit zkratky Cmd a vybrané Ctrl aliasy omezené na editor.
 - [ ] Doplnit zalamování, přiblížení a systémový, světlý i tmavý vzhled.
 - [ ] Projít souvislou práci s poznámkami včetně ukončení a obnovy, P01 až P11.
-- [ ] Změřit první výkonové výsledky release buildu a odstranit blokující chyby.
+- [x] Změřit první výkonové výsledky release buildu pro 1/10/50 MiB a odstranit nalezené zpomalení editoru.
 
 ## E. Rozšířená verze 1.0
 
@@ -85,9 +87,10 @@ Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Po úplném re
 - [ ] Připravit release sestavení a potvrdit oprávněnou podpisovou identitu.
 - [ ] Podepsat, notarizovat a ověřit balíček přes Gatekeeper na běžné instalaci.
 - [ ] Ověřit P15 včetně aktualizace se zachováním konceptů a dokumentů.
-- [ ] Zkontrolovat obsah i historii Gitu na citlivé údaje a přiložené nechtěné soubory.
-- [ ] Doplnit skutečně ověřený návod k sestavení a instalaci, licenci a známá omezení.
-- [ ] Zveřejnit repozitář a první release až v rámci výslovného zadání k publikaci.
+- [x] Zkontrolovat obsah i historii Gitu před zveřejněním na citlivé údaje a nechtěné soubory.
+- [x] Doplnit ověřený návod k sestavení a spuštění, licenci MIT a známá omezení.
+- [x] Zveřejnit repozitář nks-hub/nks-macpad podle zadání.
+- [ ] Vydat první distribuční balíček až po přejímce, podpisu a notarizaci v rámci zadání k vydání.
 
 ## G. Návrhy pro verzi 1.1
 
