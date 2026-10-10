@@ -273,6 +273,8 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
 
     func select(_ id: UUID) {
         captureSelection()
+        // Otherwise typing after coming back to a tab joins the earlier typing and one undo removes both.
+        textView?.breakUndoCoalescing()
         activeID = id
         refresh()
         checkExternalChanges()

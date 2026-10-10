@@ -133,22 +133,48 @@ final class EditorReviewTests: XCTestCase {
         XCTAssertTrue(editor.active === second)
     }
 
+    /// Real key events with run loop turns, so the undo manager closes a group per event like in the app.
+    @MainActor
+    private func type(_ text: String, in editor: EditorWindowController) throws {
+        let window = try XCTUnwrap(editor.window)
+        for character in text {
+            let key = String(character)
+            window.sendEvent(try XCTUnwrap(NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [],
+                timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil,
+                characters: key, charactersIgnoringModifiers: key, isARepeat: false, keyCode: 0)))
+            RunLoop.current.run(until: Date().addingTimeInterval(0.02))
+        }
+    }
+
     @MainActor
     func testInsertedDateIsSeparateUndoStepFromTyping() throws {
         let editor = makeEditor()
         defer { finish() }
-        let view = try XCTUnwrap(editor.textView)
-        let undo = try XCTUnwrap(view.undoManager)
-        undo.groupsByEvent = false
-        undo.beginUndoGrouping()
-        view.insertText("abc", replacementRange: view.selectedRange())
-        undo.endUndoGrouping()
-        undo.beginUndoGrouping()
+        editor.showWindow(nil)
+        try type("abc", in: editor)
         editor.insertTimestamp(nil)
-        undo.endUndoGrouping()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.02))
+        try type("x", in: editor)
         XCTAssertNotEqual(editor.active?.text, "abc")
-        undo.undo()
+        editor.active?.undoManager?.undo()
+        editor.active?.undoManager?.undo()
         XCTAssertEqual(editor.active?.text, "abc")
+    }
+
+    @MainActor
+    func testTypingAfterReturningToTabIsSeparateUndoStep() throws {
+        let editor = makeEditor()
+        defer { finish() }
+        let first = try XCTUnwrap(editor.active)
+        editor.showWindow(nil)
+        try type("abc", in: editor)
+        editor.addNote(TextDocument())
+        RunLoop.current.run(until: Date().addingTimeInterval(0.02))
+        editor.select(first.id)
+        try type("def", in: editor)
+        XCTAssertEqual(first.text, "abcdef")
+        first.undoManager?.undo()
+        XCTAssertEqual(first.text, "abc")
     }
 
     @MainActor
