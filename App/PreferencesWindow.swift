@@ -79,7 +79,7 @@ final class PreferencesWindow: NSWindowController {
 
     private func buildEditorPage() {
         let page = page()
-        fontLabel.stringValue = Preferences.font.displayName ?? Preferences.font.fontName
+        fontLabel.stringValue = Preferences.fontLabel
         let font = NSButton(title: L("Změnit…", "Change…"), target: self, action: #selector(chooseFont(_:)))
         font.bezelStyle = .rounded
         addRow(row(L("Písmo", "Font"), control: NSStackView(views: [fontLabel, font])), to: page)
@@ -178,7 +178,7 @@ final class PreferencesWindow: NSWindowController {
     @objc func chooseFont(_ sender: Any?) { app.activeEditor?.chooseFont(sender) }
     @objc func changeFont(_ sender: Any?) {
         app.activeEditor?.changeFont(sender)
-        fontLabel.stringValue = Preferences.font.displayName ?? Preferences.font.fontName
+        fontLabel.stringValue = Preferences.fontLabel
     }
     @objc func changeMenuBar(_ sender: NSButton) {
         UserDefaults.standard.set(sender.state == .on, forKey: "menuBar")

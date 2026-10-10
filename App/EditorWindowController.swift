@@ -348,7 +348,8 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
             }
             view.setSelectedRange(selection)
             window?.makeFirstResponder(view)
-            scroll.contentView.scroll(to: NSPoint(x: 0, y: scrollY))
+            // The line-number ruler insets the clip view; x = 0 would slide the first 48 pt of text under it.
+            scroll.contentView.scroll(to: NSPoint(x: -scroll.contentView.contentInsets.left, y: scrollY))
             scroll.reflectScrolledClipView(scroll.contentView)
         }
         refreshTitles()

@@ -186,6 +186,21 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testLineNumbersDoNotCoverTextOfNewTab() throws {
+        let old = UserDefaults.standard.object(forKey: "lineNumbers")
+        UserDefaults.standard.set(true, forKey: "lineNumbers")
+        defer { UserDefaults.standard.set(old, forKey: "lineNumbers"); finish() }
+        let editor = makeEditor(text: "short")
+        editor.addNote(TextDocument())
+        editor.showWindow(nil)
+        editor.window?.contentView?.layoutSubtreeIfNeeded()
+        let scroll = try XCTUnwrap(editor.textView?.enclosingScrollView)
+        let ruler = try XCTUnwrap(scroll.verticalRulerView)
+        let textX = try XCTUnwrap(editor.textView).convert(NSPoint.zero, to: nil).x
+        XCTAssertGreaterThanOrEqual(textX, ruler.convert(NSPoint(x: ruler.bounds.maxX, y: 0), to: nil).x)
+    }
+
+    @MainActor
     func testClosingBackgroundTabKeepsActiveDocument() {
         let oldRestore = UserDefaults.standard.object(forKey: "restore")
         Preferences.restore = false

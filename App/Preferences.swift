@@ -26,6 +26,12 @@ enum Preferences {
         let name = UserDefaults.standard.string(forKey: "fontName") ?? ""
         return NSFont(name: name, size: fontSize) ?? .monospacedSystemFont(ofSize: fontSize, weight: .regular)
     }
+    /// The system monospaced font has a private name such as ".SF NS Mono Light".
+    static var fontLabel: String {
+        let font = self.font
+        if font.fontName.hasPrefix(".") { return L("Systémové neproporcionální", "System monospaced") }
+        return font.displayName ?? font.fontName
+    }
     static func applyAppearance() {
         switch UserDefaults.standard.string(forKey: "appearance") {
         case "light": NSApp.appearance = NSAppearance(named: .aqua)
