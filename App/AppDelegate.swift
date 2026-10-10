@@ -115,6 +115,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @discardableResult
     func makeWindow(quick: Bool = false, id: UUID = UUID()) -> EditorWindowController {
         let editor = EditorWindowController(app: self, quick: quick, id: id)
+        // Every window is centered, so without an offset a new window covers the one it came from.
+        if !quick, let previous = activeEditor, !previous.quick, previous.window?.isVisible == true, let frame = previous.window?.frame {
+            editor.window?.setFrameTopLeftPoint(NSPoint(x: frame.minX + 24, y: frame.maxY - 24))
+        }
         editors.append(editor)
         return editor
     }

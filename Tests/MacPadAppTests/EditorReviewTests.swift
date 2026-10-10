@@ -178,6 +178,31 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testNewWindowDoesNotCoverPreviousOne() throws {
+        let first = makeEditor()
+        defer { finish() }
+        first.showWindow(nil)
+        let second = first.app.makeWindow()
+        let a = try XCTUnwrap(first.window?.frame)
+        let b = try XCTUnwrap(second.window?.frame)
+        XCTAssertNotEqual(a.origin, b.origin)
+    }
+
+    @MainActor
+    func testPrintViewFollowsTextHeight() throws {
+        let editor = makeEditor()
+        defer { finish() }
+        let info = NSPrintInfo.shared
+        let page = info.paperSize.height - info.topMargin - info.bottomMargin
+        let short = TextDocument()
+        short.text = "one\ntwo\nthree"
+        XCTAssertLessThan(editor.printableView(for: short).frame.height, page)
+        let long = TextDocument()
+        long.text = (1...300).map { "line \($0)" }.joined(separator: "\n")
+        XCTAssertGreaterThan(editor.printableView(for: long).frame.height, page)
+    }
+
+    @MainActor
     func testMovingOnlyTabClosesEmptySourceWindow() {
         let source = makeEditor(text: "moving")
         defer { finish() }

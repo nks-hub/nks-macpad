@@ -240,11 +240,20 @@ extension EditorWindowController {
 
     @objc func printNote(_ sender: Any?) {
         guard let note = active else { return }
-        let printable = NSTextView(frame: NSRect(x: 0, y: 0, width: 500, height: 700))
+        printableView(for: note).printView(sender)
+    }
+
+    /// Sized to its text: a fixed 700 pt frame printed a blank second page for short notes.
+    func printableView(for note: TextDocument) -> NSTextView {
+        let info = NSPrintInfo.shared
+        let width = info.paperSize.width - info.leftMargin - info.rightMargin
+        let printable = NSTextView(frame: NSRect(x: 0, y: 0, width: width, height: 1))
         printable.isRichText = false
+        printable.isVerticallyResizable = true
         printable.font = Preferences.font
         printable.string = note.text
-        printable.printView(sender)
+        printable.sizeToFit()
+        return printable
     }
 
     @objc func setEncoding(_ sender: NSMenuItem) {
