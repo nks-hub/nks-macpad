@@ -460,7 +460,8 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
             ? value.substring(with: NSRange(location: min(selection.location, value.length), length: min(selection.length, max(0, value.length - selection.location)))).count
             : characterCount
         let selected = selection.length > 0 ? L(" vybráno", " selected") : L(" znaků", " characters")
-        status.stringValue = (note.externalChange ? L("Soubor změněn nebo nedostupný. ", "File changed or unavailable. ") : "")
+        status.stringValue = (window?.level == .floating ? L("Okno navrchu · ", "Always on top · ") : "")
+            + (note.externalChange ? L("Soubor změněn nebo nedostupný. ", "File changed or unavailable. ") : "")
             + "\(L("Ř.", "Ln")) \(line), \(L("sl.", "Col")) \(column)"
         statusBar.count.stringValue = "\(count)\(selected)"
         statusBar.zoom.stringValue = "\(Int(Preferences.fontSize / 14 * 100)) %"

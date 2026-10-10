@@ -223,7 +223,7 @@ extension EditorWindowController {
     }
     @objc func toggleOnTop(_ sender: Any?) {
         window?.level = window?.level == .floating ? .normal : .floating
-        window?.subtitle = window?.level == .floating ? L("Okno navrchu", "Always on top") : ""
+        updateStatus()
     }
     func escape() {
         if !findAll.isHidden {

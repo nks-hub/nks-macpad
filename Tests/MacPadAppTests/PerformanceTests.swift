@@ -6,6 +6,9 @@ final class PerformanceTests: XCTestCase {
     @MainActor func testOneMiBDocument() async throws { try await sampleDocument(mebibytes: 1) }
     @MainActor func testTenMiBDocument() async throws { try await sampleDocument(mebibytes: 10) }
     @MainActor func testFiftyMiBDocument() async throws { try await sampleDocument(mebibytes: 50) }
+    @MainActor func testTwoMillionCharacterLine() async throws {
+        try await sampleDocument(mebibytes: 2, line: String(repeating: "x", count: 2_000_000) + "\n")
+    }
     @MainActor func testTenMiBCzechDocument() async throws {
         try await sampleDocument(mebibytes: 10, line: "Příliš žluťoučký kůň úpěl ďábelské ódy 0123456789\n")
     }

@@ -178,6 +178,16 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testAlwaysOnTopIsVisibleInStatus() {
+        let editor = makeEditor(text: "x")
+        defer { finish() }
+        editor.toggleOnTop(nil)
+        XCTAssertTrue(editor.status.stringValue.hasPrefix(L("Okno navrchu", "Always on top")))
+        editor.toggleOnTop(nil)
+        XCTAssertFalse(editor.status.stringValue.hasPrefix(L("Okno navrchu", "Always on top")))
+    }
+
+    @MainActor
     func testNewWindowDoesNotCoverPreviousOne() throws {
         let first = makeEditor()
         defer { finish() }
