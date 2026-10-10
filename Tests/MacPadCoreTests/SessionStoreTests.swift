@@ -106,16 +106,32 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertFalse(store.lastLoadRecoveredFromBackup)
     }
 
+    func testUnmodifiedFileNoteStoresNoTextAndVersionOneStillLoads() throws {
+        let file = NoteSnapshot(path: "/tmp/notes.txt", selectionLocation: 900, textOnDisk: true)
+        try store.save(SessionSnapshot(windows: [WindowSnapshot(notes: [file])]))
+        let loaded = try XCTUnwrap(try store.load()?.windows.first?.notes.first)
+        XCTAssertTrue(loaded.textOnDisk)
+        XCTAssertEqual(loaded.text, "")
+        XCTAssertEqual(loaded.selectionLocation, 900)
+
+        let legacy = Data(#"{"version":1,"windows":[{"id":"\#(UUID().uuidString)","notes":[{"id":"\#(UUID().uuidString)","text":"legacy","format":{"encoding":"utf8","lineEnding":"lf"},"pinned":false,"selectionLocation":0,"selectionLength":0,"scrollY":0}],"quickNote":false,"visible":true}]}"#.utf8)
+        try legacy.write(to: currentURL)
+        try legacy.write(to: backupURL)
+        let old = try XCTUnwrap(try store.load()?.windows.first?.notes.first)
+        XCTAssertEqual(old.text, "legacy")
+        XCTAssertFalse(old.textOnDisk)
+    }
+
     func testNewerSchemaInEitherCopyPreventsOverwrite() throws {
         try store.save(session("keep"))
         let original = try Data(contentsOf: currentURL)
-        let newer = Data(#"{"version":2,"futureState":true}"#.utf8)
+        let newer = Data(#"{"version":3,"futureState":true}"#.utf8)
         for url in [currentURL, backupURL] {
             try original.write(to: currentURL)
             try original.write(to: backupURL)
             try newer.write(to: url)
             XCTAssertThrowsError(try store.load()) { error in
-                guard case SessionStoreError.unsupportedVersion(2) = error else {
+                guard case SessionStoreError.unsupportedVersion(3) = error else {
                     return XCTFail("Expected an unsupported version error")
                 }
             }

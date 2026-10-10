@@ -134,7 +134,7 @@ final class LifecycleReviewTests: XCTestCase {
         app.flushSession { ok in XCTAssertTrue(ok); saved.fulfill() }
         await fulfillment(of: [saved], timeout: 5)
         XCTAssertEqual(background.selection, NSRange(location: 5, length: 0))
-        XCTAssertEqual(try app.sessionStore.load()?.windows.flatMap(\.notes).first { $0.id == background.id }?.text, "short")
+        XCTAssertEqual(try app.sessionStore.load()?.windows.flatMap(\.notes).first { $0.id == background.id }?.selectionLocation, 5)
     }
 
     @MainActor
@@ -157,6 +157,33 @@ final class LifecycleReviewTests: XCTestCase {
         await fulfillment(of: [flagged], timeout: 5)
         XCTAssertEqual(note.text, "Příliš")
         XCTAssertEqual(note.format.encoding, .windows1250)
+    }
+
+    @MainActor
+    func testUnmodifiedFileIsRestoredFromDiskNotFromSession() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let file = directory.appendingPathComponent("clean.txt")
+        try Data("first line\nsecond line".utf8).write(to: file)
+        let note = TextDocument()
+        try note.load(file)
+        note.selection = NSRange(location: 11, length: 6)
+        let snapshot = note.snapshot()
+        XCTAssertTrue(snapshot.textOnDisk)
+        XCTAssertEqual(snapshot.text, "")
+        XCTAssertNil(snapshot.savedText)
+
+        let restored = TextDocument(snapshot: snapshot)
+        XCTAssertEqual(restored.text, "first line\nsecond line")
+        XCTAssertFalse(restored.isDocumentEdited)
+        XCTAssertEqual(restored.selection, NSRange(location: 11, length: 6))
+
+        note.changed(to: "edited")
+        XCTAssertFalse(note.snapshot().textOnDisk)
+        try FileManager.default.removeItem(at: file)
+        let missing = TextDocument(snapshot: snapshot)
+        XCTAssertTrue(missing.externalChange)
     }
 
     @MainActor

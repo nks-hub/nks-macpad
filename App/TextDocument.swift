@@ -88,11 +88,13 @@ final class TextDocument: NSDocument {
     }
 
     func snapshot() -> NoteSnapshot {
-        NoteSnapshot(id: id, text: text, savedText: savedText,
-                     path: fileURL?.path, format: format, savedFormat: savedFormat,
-                     stamp: stamp, title: customTitle, pinned: pinned,
-                     selectionLocation: selection.location, selectionLength: selection.length,
-                     scrollY: scrollY)
+        // Storing unmodified files made each session write grow with every open file (1.5 GB for 7 x 106 MB).
+        let onDisk = fileURL != nil && savedText != nil && !isDocumentEdited
+        return NoteSnapshot(id: id, text: onDisk ? "" : text, savedText: onDisk ? nil : savedText,
+                            path: fileURL?.path, format: format, savedFormat: savedFormat,
+                            stamp: stamp, title: customTitle, pinned: pinned,
+                            selectionLocation: selection.location, selectionLength: selection.length,
+                            scrollY: scrollY, textOnDisk: onDisk)
     }
 
     convenience init(snapshot: NoteSnapshot) {
@@ -103,6 +105,10 @@ final class TextDocument: NSDocument {
         savedFormat = snapshot.savedFormat
         fileURL = snapshot.path.map { URL(fileURLWithPath: $0) }
         stamp = snapshot.stamp
+        if snapshot.textOnDisk, let fileURL {
+            // Nothing unsaved was stored, so a file that is gone or unreadable only gets flagged.
+            do { try load(fileURL, encoding: snapshot.format.encoding) } catch { externalChange = true }
+        }
         customTitle = snapshot.title
         pinned = snapshot.pinned
         let length = (text as NSString).length

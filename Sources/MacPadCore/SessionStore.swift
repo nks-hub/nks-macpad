@@ -13,13 +13,16 @@ public struct NoteSnapshot: Codable, Sendable {
     public var selectionLocation: Int
     public var selectionLength: Int
     public var scrollY: Double
+    /// The note is an unmodified file: its text is not stored and is read from `path` on restore.
+    public var textOnDisk: Bool
 
     public init(
         id: UUID = UUID(), text: String = "", savedText: String? = nil,
         path: String? = nil, format: TextFormat = TextFormat(),
         savedFormat: TextFormat? = nil, stamp: FileStamp? = nil,
         title: String? = nil, pinned: Bool = false,
-        selectionLocation: Int = 0, selectionLength: Int = 0, scrollY: Double = 0
+        selectionLocation: Int = 0, selectionLength: Int = 0, scrollY: Double = 0,
+        textOnDisk: Bool = false
     ) {
         self.id = id
         self.text = text
@@ -33,6 +36,29 @@ public struct NoteSnapshot: Codable, Sendable {
         self.selectionLocation = selectionLocation
         self.selectionLength = selectionLength
         self.scrollY = scrollY
+        self.textOnDisk = textOnDisk
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, text, savedText, path, format, savedFormat, stamp, title, pinned
+        case selectionLocation, selectionLength, scrollY, textOnDisk
+    }
+
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(UUID.self, forKey: .id)
+        text = try values.decode(String.self, forKey: .text)
+        savedText = try values.decodeIfPresent(String.self, forKey: .savedText)
+        path = try values.decodeIfPresent(String.self, forKey: .path)
+        format = try values.decode(TextFormat.self, forKey: .format)
+        savedFormat = try values.decodeIfPresent(TextFormat.self, forKey: .savedFormat)
+        stamp = try values.decodeIfPresent(FileStamp.self, forKey: .stamp)
+        title = try values.decodeIfPresent(String.self, forKey: .title)
+        pinned = try values.decode(Bool.self, forKey: .pinned)
+        selectionLocation = try values.decode(Int.self, forKey: .selectionLocation)
+        selectionLength = try values.decode(Int.self, forKey: .selectionLength)
+        scrollY = try values.decode(Double.self, forKey: .scrollY)
+        textOnDisk = try values.decodeIfPresent(Bool.self, forKey: .textOnDisk) ?? false
     }
 }
 
@@ -61,7 +87,10 @@ public struct SessionSnapshot: Codable, Sendable {
     public var version: Int
     public var windows: [WindowSnapshot]
 
-    public init(version: Int = 1, windows: [WindowSnapshot] = []) {
+    /// Version 2 adds `NoteSnapshot.textOnDisk`; version 1 sessions still load.
+    public static let currentVersion = 2
+
+    public init(version: Int = SessionSnapshot.currentVersion, windows: [WindowSnapshot] = []) {
         self.version = version
         self.windows = windows
     }
@@ -211,7 +240,9 @@ public final class SessionStore {
 
         let decoder = JSONDecoder()
         guard let header = try? decoder.decode(Header.self, from: data) else { return .corrupt }
-        guard header.version == 1 else { throw SessionStoreError.unsupportedVersion(header.version) }
+        guard (1...SessionSnapshot.currentVersion).contains(header.version) else {
+            throw SessionStoreError.unsupportedVersion(header.version)
+        }
         guard let session = try? decoder.decode(SessionSnapshot.self, from: data) else { return .corrupt }
         do {
             try validate(session)
@@ -222,7 +253,9 @@ public final class SessionStore {
     }
 
     private func validate(_ session: SessionSnapshot) throws {
-        guard session.version == 1 else { throw SessionStoreError.unsupportedVersion(session.version) }
+        guard (1...SessionSnapshot.currentVersion).contains(session.version) else {
+            throw SessionStoreError.unsupportedVersion(session.version)
+        }
         var windowIDs = Set<UUID>()
         var noteIDs = Set<UUID>()
         for window in session.windows {
@@ -235,6 +268,13 @@ public final class SessionStore {
             }
         }
         for note in session.windows.flatMap(\.notes) {
+            if note.textOnDisk {
+                guard note.path != nil, note.text.isEmpty, note.selectionLocation >= 0, note.selectionLength >= 0 else {
+                    throw SessionStoreError.invalidSelection
+                }
+                guard note.scrollY.isFinite, note.scrollY >= 0 else { throw SessionStoreError.invalidScrollPosition }
+                continue
+            }
             let length = note.text.utf16.count
             guard note.selectionLocation >= 0, note.selectionLocation <= length,
                   note.selectionLength >= 0, note.selectionLength <= length - note.selectionLocation else {
