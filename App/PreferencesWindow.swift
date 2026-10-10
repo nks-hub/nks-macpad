@@ -204,7 +204,7 @@ final class PreferencesWindow: NSWindowController {
                 try self.app.sessionStore.save(SessionSnapshot(windows: []))
                 DispatchQueue.main.async { Preferences.restore = false; sender.isEnabled = true }
             } catch {
-                DispatchQueue.main.async { Preferences.restore = true; sender.state = .on; sender.isEnabled = true; self.app.showError(error.localizedDescription) }
+                DispatchQueue.main.async { Preferences.restore = true; sender.state = .on; sender.isEnabled = true; self.app.showError(errorMessage(error)) }
             }
         }
     }

@@ -42,7 +42,7 @@ extension EditorWindowController {
                     self.activeID = oldActive
                     self.refresh()
                     self.app.changed()
-                    self.app.showError(self.app.sessionFailure ?? "Session write failed")
+                    self.app.showError(self.app.sessionFailure ?? L("Relaci se nepodařilo uložit.", "The session could not be saved."))
                 }
             }
         }

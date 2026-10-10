@@ -1,7 +1,7 @@
 import Foundation
 import MacPadCore
 
-func fileErrorMessage(_ error: Error) -> String {
+func errorMessage(_ error: Error) -> String {
     if let error = error as? TextFileStoreError {
         switch error {
         case .conflict:
@@ -25,6 +25,20 @@ func fileErrorMessage(_ error: Error) -> String {
             return L("Toto kódování neumí uložit některé znaky. Zvolte UTF-8 v nabídce Text.", "This encoding cannot represent some characters. Choose UTF-8 in the Text menu.")
         case .mixedLineEndings:
             return L("Před uložením vyberte konce řádků LF nebo CRLF.", "Choose LF or CRLF line endings before saving.")
+        }
+    }
+    if let error = error as? SessionStoreError {
+        switch error {
+        case .unsupportedVersion:
+            return L("Uložená relace pochází z novější verze MacPadu. Zůstává beze změny.", "The saved session comes from a newer MacPad. It was left unchanged.")
+        case .unreadableSession:
+            return L("Uloženou relaci ani její zálohu nelze přečíst. Zůstávají beze změny.", "The saved session and its backup cannot be read. They were left unchanged.")
+        case .inaccessibleCopy:
+            return L("K jedné kopii relace nelze přistoupit. Zůstává beze změny.", "A saved session copy cannot be accessed. It was left unchanged.")
+        case .invalidSelection, .invalidScrollPosition, .invalidIdentity, .invalidActiveNote:
+            return L("Relace obsahuje neplatná data a nebyla uložena.", "The session contains invalid data and was not saved.")
+        case .inUse:
+            return L("Složku poznámek používá jiný běžící MacPad.", "Another running MacPad is using the notes folder.")
         }
     }
     return error.localizedDescription

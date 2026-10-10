@@ -69,7 +69,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             alert.runModal()
             exit(0)
         } catch {
-            sessionFailure = error.localizedDescription
+            sessionFailure = errorMessage(error)
         }
         installMenus()
         Preferences.applyAppearance()
@@ -90,9 +90,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         } catch {
-            sessionFailure = error.localizedDescription
+            sessionFailure = errorMessage(error)
             showError(L("Obnova selhala. Původní data zůstávají zachována. Nové poznámky ukládejte do souborů.",
-                        "Recovery failed. Original data has been preserved. Save new notes to files.") + "\n" + error.localizedDescription)
+                        "Recovery failed. Original data has been preserved. Save new notes to files.") + "\n" + errorMessage(error))
         }
         if editors.filter({ !$0.quick }).isEmpty { newWindow(nil) }
         else if !editors.contains(where: { $0.window?.isVisible == true }) {
@@ -169,11 +169,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                case .invalidData = codecError, encoding == nil {
                                 let alert = NSAlert()
                                 alert.messageText = L("Soubor nelze načíst jako Unicode.", "Cannot read this file as Unicode.")
-                                alert.informativeText = fileErrorMessage(error)
+                                alert.informativeText = errorMessage(error)
                                 alert.addButton(withTitle: L("Zkusit Windows-1250", "Try Windows-1250"))
                                 alert.addButton(withTitle: L("Zrušit", "Cancel"))
                                 if alert.runModal() == .alertFirstButtonReturn { open([url], encoding: .windows1250, selection: selection) }
-                            } else { showError(fileErrorMessage(error)) }
+                            } else { showError(errorMessage(error)) }
                         }
                         editors.forEach { $0.updateStatus() }
                     }
@@ -262,7 +262,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             } catch {
                 DispatchQueue.main.async {
                     self.sessionWriteInFlight = false
-                    self.sessionFailure = error.localizedDescription
+                    self.sessionFailure = errorMessage(error)
                     self.editors.forEach { $0.updateStatus() }
                     self.completeSessionWaiters(false)
                 }
@@ -289,7 +289,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard panel.runModal() == .OK, let url = panel.url else { completion(false); return }
             target = url.resolvingSymlinksInPath().standardizedFileURL
             do { expected = try TextFileStore.stamp(target!) }
-            catch { showError(error.localizedDescription); completion(false); return }
+            catch { showError(errorMessage(error)); completion(false); return }
         }
         guard let url = target else { completion(false); return }
         if editors.flatMap(\.notes).contains(where: { other in
@@ -364,7 +364,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         let alert = NSAlert()
         alert.messageText = L("Soubor se nepodařilo uložit.", "The file could not be saved.")
-        alert.informativeText = fileErrorMessage(error)
+        alert.informativeText = errorMessage(error)
         alert.addButton(withTitle: L("Zrušit", "Cancel"))
         alert.addButton(withTitle: L("Uložit kopii…", "Save a copy…"))
         alert.addButton(withTitle: L("Znovu načíst ze souboru…", "Reload from disk…"))
@@ -377,7 +377,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             confirm.addButton(withTitle: L("Načíst", "Reload"))
             if confirm.runModal() == .alertSecondButtonReturn {
                 do { try note.load(url, encoding: note.format.encoding); editors.forEach { $0.reload(note) }; changed(); refreshSearchResults() }
-                catch { showError(error.localizedDescription) }
+                catch { showError(errorMessage(error)) }
             }
             completion(false)
         } else { completion(false) }
@@ -463,7 +463,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         DispatchQueue.main.async { self.finishQuit(true) }
                     } catch {
                         // Recovery is off and every note was resolved; the old files stay untouched.
-                        DispatchQueue.main.async { self.showError(error.localizedDescription); self.finishQuit(true) }
+                        DispatchQueue.main.async { self.showError(errorMessage(error)); self.finishQuit(true) }
                     }
                 }
             }

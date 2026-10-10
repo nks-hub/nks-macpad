@@ -627,7 +627,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
                     sender.orderOut(nil)
                     self.app.changed()
                     if self.quick { self.app.restoreQuickNoteFocus() }
-                } else { self.app.showError(self.app.sessionFailure ?? "Session write failed") }
+                } else { self.app.showError(self.app.sessionFailure ?? L("Relaci se nepodařilo uložit.", "The session could not be saved.")) }
             }
         } else {
             app.resolveChanges(notes) { ok in
