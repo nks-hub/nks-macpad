@@ -106,6 +106,65 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    private func controlKey(_ characters: String, shift: Bool = false, keyCode: UInt16, in editor: EditorWindowController) throws -> NSEvent {
+        try XCTUnwrap(NSEvent.keyEvent(with: .keyDown, location: .zero,
+            modifierFlags: shift ? [.control, .shift] : [.control], timestamp: 0, windowNumber: editor.window!.windowNumber,
+            context: nil, characters: characters, charactersIgnoringModifiers: characters, isARepeat: false, keyCode: keyCode))
+    }
+
+    @MainActor
+    func testControlShortcutIsIgnoredWhileSearchFieldHasFocus() throws {
+        let editor = makeEditor(text: "keep")
+        defer { finish() }
+        editor.showSearchAll(nil)
+        XCTAssertFalse(editor.window?.firstResponder === editor.textView)
+        XCTAssertFalse(editor.textView?.performKeyEquivalent(with: try controlKey("a", keyCode: 0, in: editor)) == true)
+        XCTAssertEqual(editor.textView?.selectedRange().length, 0)
+    }
+
+    @MainActor
+    func testControlShiftTabSelectsPreviousTab() throws {
+        let editor = makeEditor(text: "first")
+        defer { finish() }
+        let second = TextDocument()
+        editor.addNote(second)
+        editor.addNote(TextDocument())
+        XCTAssertTrue(editor.textView?.performKeyEquivalent(with: try controlKey("\u{19}", shift: true, keyCode: 48, in: editor)) == true)
+        XCTAssertTrue(editor.active === second)
+    }
+
+    @MainActor
+    func testInsertedDateIsSeparateUndoStepFromTyping() throws {
+        let editor = makeEditor()
+        defer { finish() }
+        let view = try XCTUnwrap(editor.textView)
+        let undo = try XCTUnwrap(view.undoManager)
+        undo.groupsByEvent = false
+        undo.beginUndoGrouping()
+        view.insertText("abc", replacementRange: view.selectedRange())
+        undo.endUndoGrouping()
+        undo.beginUndoGrouping()
+        editor.insertTimestamp(nil)
+        undo.endUndoGrouping()
+        XCTAssertNotEqual(editor.active?.text, "abc")
+        undo.undo()
+        XCTAssertEqual(editor.active?.text, "abc")
+    }
+
+    @MainActor
+    func testMovingOnlyTabClosesEmptySourceWindow() {
+        let source = makeEditor(text: "moving")
+        defer { finish() }
+        let target = source.app.makeWindow()
+        target.addNote(TextDocument())
+        let note = source.notes[0]
+        source.move(note, to: target)
+        XCTAssertFalse(source.app.editors.contains { $0 === source })
+        XCTAssertTrue(target.notes.contains { $0 === note })
+        XCTAssertTrue(target.active === note)
+    }
+
+    @MainActor
     func testClosingBackgroundTabKeepsActiveDocument() {
         let oldRestore = UserDefaults.standard.object(forKey: "restore")
         Preferences.restore = false

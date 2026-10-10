@@ -166,8 +166,18 @@ final class EditorTextView: NSTextView, NSTextStorageDelegate {
     override func paste(_ sender: Any?) { pasteAsPlainText(sender) }
     override func pasteAsPlainText(_ sender: Any?) {
         guard let text = NSPasteboard.general.string(forType: .string) else { return }
-        insertText(text, replacementRange: selectedRange())
+        insertCommandText(text, name: L("Vložit", "Paste"))
     }
+
+    /// insertText counts as typing, so without breaks the command would share one undo step with the typing around it.
+    func insertCommandText(_ text: String, name: String) {
+        breakUndoCoalescing()
+        insertText(text, replacementRange: selectedRange())
+        breakUndoCoalescing()
+        undoManager?.setActionName(name)
+    }
+
+    override func changeFont(_ sender: Any?) { owner?.changeFont(sender) }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         if let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL], !urls.isEmpty {
@@ -186,7 +196,8 @@ final class EditorTextView: NSTextView, NSTextStorageDelegate {
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         let modifiers = event.modifierFlags.intersection([.control, .shift, .option, .command])
-        if modifiers == .control || modifiers == [.control, .shift] {
+        // The window offers key equivalents to every view, including editors behind a focused search field.
+        if window?.firstResponder === self, modifiers == .control || modifiers == [.control, .shift] {
             if hasMarkedText() { return super.performKeyEquivalent(with: event) }
             let shifted = modifiers.contains(.shift)
             switch event.charactersIgnoringModifiers?.lowercased() {
@@ -203,7 +214,7 @@ final class EditorTextView: NSTextView, NSTextStorageDelegate {
             case "f": owner?.find(nil)
             case "h": owner?.replace(nil)
             case "g": owner?.goToLine(nil)
-            case "\t": owner?.cycleTab(backward: shifted)
+            case "\t", "\u{19}": owner?.cycleTab(backward: shifted)
             default: return super.performKeyEquivalent(with: event)
             }
             return true

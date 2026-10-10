@@ -302,6 +302,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
                 view.isRichText = false
                 view.importsGraphics = false
                 view.allowsUndo = true
+                view.isEditable = !app.editingLocked
                 view.usesFindBar = true
                 view.isIncrementalSearchingEnabled = false
                 view.isAutomaticQuoteSubstitutionEnabled = false
@@ -592,6 +593,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
                     self.app.refreshSearchResults()
                     self.allowClose = true
                     sender.close()
+                    if self.quick { self.app.restoreQuickNoteFocus() }
                 }
             }
         }

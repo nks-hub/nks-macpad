@@ -52,7 +52,7 @@ final class CommandPanel: NSWindowController, NSTableViewDataSource, NSTableView
         scroll.widthAnchor.constraint(equalTo: search.widthAnchor).isActive = true
         let choose = NSButton(title: L("Otevřít", "Open"), target: self, action: #selector(choose(_:)))
         stack.addArrangedSubview(choose)
-        table.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+        if !choices.isEmpty { table.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false) }
     }
     required init?(coder: NSCoder) { fatalError("Use init(title:choices:editor:)") }
     func numberOfRows(in tableView: NSTableView) -> Int { filtered.count }
@@ -94,6 +94,8 @@ final class CommandPanel: NSWindowController, NSTableViewDataSource, NSTableView
 extension EditorWindowController {
     func presentPanel(title: String, choices: [CommandChoice]) {
         guard let window, window.attachedSheet == nil else { return }
+        // A window closed with recovery on is only hidden; a sheet on it would be invisible and block later panels.
+        showWindow(nil)
         let panel = CommandPanel(title: title, choices: choices, editor: self)
         self.panel = panel
         window.beginSheet(panel.window!) { [weak self] _ in

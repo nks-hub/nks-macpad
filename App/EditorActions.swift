@@ -86,6 +86,17 @@ extension EditorWindowController {
                 view.delegate = target
                 target.textViews[note.id] = view
             }
+            if notes.isEmpty {
+                if quick {
+                    notes.append(TextDocument())
+                    activeID = notes[0].id
+                    refresh()
+                } else {
+                    app.editors.removeAll { $0 === self }
+                    allowClose = true
+                    window?.close()
+                }
+            }
         }
         target.select(note.id)
         app.changed()
@@ -265,7 +276,7 @@ extension EditorWindowController {
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         formatter.timeStyle = .short
-        textView?.insertText(formatter.string(from: Date()), replacementRange: textView?.selectedRange() ?? NSRange(location: 0, length: 0))
+        textView?.insertCommandText(formatter.string(from: Date()), name: L("Vložit datum a čas", "Insert date and time"))
     }
 
     func replaceRange(_ range: NSRange, with replacement: String, name: String) {
