@@ -35,6 +35,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     private var lineStarts = [0]
     private var characterCount = 0
     private var metricsASCII = false
+    private var characterCountWork: DispatchWorkItem?
 
     private struct TabPresentation: Equatable {
         let id: UUID
@@ -440,20 +441,16 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
                 if unit == 10 { lineStarts.append(offset + 1) }
                 if unit > 127 || unit == 13 { metricsASCII = false }
             }
-            characterCount = metricsASCII ? value.length : note.text.count
             metricsNoteID = note.id
             metricsRevision = note.revision
+            if metricsASCII { characterCount = value.length } else { scheduleCharacterCount(note, delay: 0) }
         }
         let location = min(selection.location, value.length)
-        var lower = 0
-        var upper = lineStarts.count
-        while lower < upper {
-            let middle = (lower + upper) / 2
-            if lineStarts[middle] <= location { lower = middle + 1 } else { upper = middle }
-        }
-        let lineIndex = max(0, lower - 1)
+        let lineIndex = cachedLineIndex(at: location)
         let line = lineIndex + 1
-        let column = value.substring(with: NSRange(location: lineStarts[lineIndex], length: location - lineStarts[lineIndex])).count + 1
+        let lineStart = lineStarts[lineIndex]
+        let column = metricsASCII ? location - lineStart + 1
+            : value.substring(with: NSRange(location: lineStart, length: location - lineStart)).count + 1
         let count = selection.length > 0
             ? value.substring(with: NSRange(location: min(selection.location, value.length), length: min(selection.length, max(0, value.length - selection.location)))).count
             : characterCount
@@ -507,12 +504,13 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
                 let oldRange = NSRange(location: newRange.location, length: newRange.length - delta)
                 if let range = Range(oldRange, in: note.text) {
                     let replacement = copyText(source, range: newRange)
-                    let canUpdateMetrics = metricsNoteID == note.id && metricsRevision == note.revision && metricsASCII
-                        && replacement.utf8.allSatisfy { $0 < 128 && $0 != 13 }
+                    let canUpdateMetrics = metricsNoteID == note.id && metricsRevision == note.revision
+                        && !replacement.utf16.contains(13)
                     note.replaceText(in: range, with: replacement)
                     if canUpdateMetrics {
-                        updateASCIIMetrics(replacing: oldRange, with: replacement, delta: delta)
+                        updateMetrics(replacing: oldRange, with: replacement, delta: delta)
                         metricsRevision = note.revision
+                        if !metricsASCII { scheduleCharacterCount(note, delay: 0.3) }
                     }
                     applied = true
                 }
@@ -528,7 +526,50 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         app.refreshSearchResults()
     }
 
-    private func updateASCIIMetrics(replacing range: NSRange, with text: String, delta: Int) {
+    /// Index into lineStarts of the line containing a UTF-16 location.
+    private func cachedLineIndex(at location: Int) -> Int {
+        var lower = 0
+        var upper = lineStarts.count
+        while lower < upper {
+            let middle = (lower + upper) / 2
+            if lineStarts[middle] <= location { lower = middle + 1 } else { upper = middle }
+        }
+        return max(0, lower - 1)
+    }
+
+    /// 1-based line number and total line count from the cache, or nil when it belongs to another note or revision.
+    func cachedLine(at location: Int, in view: EditorTextView) -> (line: Int, total: Int)? {
+        guard let note = view.note, metricsNoteID == note.id, metricsRevision == note.revision else { return nil }
+        return (cachedLineIndex(at: location) + 1, lineStarts.count)
+    }
+
+    /// Counting graphemes walks the whole text (about 50 ms for 10 MiB of Czech), so it runs off the main thread.
+    // ponytail: the count shown while typing lags up to 0.3 s behind; exact once typing pauses.
+    private func scheduleCharacterCount(_ note: TextDocument, delay: TimeInterval) {
+        characterCountWork?.cancel()
+        if note.utf16Length < 1 << 18 {
+            characterCount = note.text.count
+            return
+        }
+        let work = DispatchWorkItem { [weak self, weak note] in
+            guard let self, let note else { return }
+            let text = note.text
+            let id = note.id
+            let revision = note.revision
+            DispatchQueue.global(qos: .utility).async { [weak self] in
+                let count = text.count
+                DispatchQueue.main.async {
+                    guard let self, self.metricsNoteID == id, self.metricsRevision == revision else { return }
+                    self.characterCount = count
+                    self.updateStatus()
+                }
+            }
+        }
+        characterCountWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
+    private func updateMetrics(replacing range: NSRange, with text: String, delta: Int) {
         func firstStart(after offset: Int) -> Int {
             var low = 0
             var high = lineStarts.count
@@ -540,11 +581,11 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         }
         let lower = firstStart(after: range.location)
         let upper = firstStart(after: NSMaxRange(range))
-        let newStarts = text.utf8.enumerated().compactMap { $0.element == 10 ? range.location + $0.offset + 1 : nil }
+        let newStarts = text.utf16.enumerated().compactMap { $0.element == 10 ? range.location + $0.offset + 1 : nil }
         lineStarts.removeSubrange(lower..<upper)
         lineStarts.insert(contentsOf: newStarts, at: lower)
         for index in (lower + newStarts.count)..<lineStarts.count { lineStarts[index] += delta }
-        characterCount += delta
+        if metricsASCII && text.utf8.allSatisfy({ $0 < 128 }) { characterCount += delta } else { metricsASCII = false }
     }
 
     func textViewDidChangeSelection(_ notification: Notification) {

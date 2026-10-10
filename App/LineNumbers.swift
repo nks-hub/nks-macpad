@@ -31,7 +31,8 @@ final class LineNumbers: NSRulerView {
         let glyphs = layout.glyphRange(forBoundingRect: visible, in: container)
         let characters = layout.characterRange(forGlyphRange: glyphs, actualGlyphRange: nil)
         var location = text.lineRange(for: NSRange(location: min(characters.location, text.length), length: 0)).location
-        var number = text.substring(to: location).reduce(1) { $1 == "\n" ? $0 + 1 : $0 }
+        let cached = (editor as? EditorTextView).flatMap { view in view.owner?.cachedLine(at: location, in: view) }
+        var number = cached?.line ?? editor.string.utf16.prefix(location).reduce(1) { $1 == 10 ? $0 + 1 : $0 }
         var labels: [(number: Int, origin: NSPoint)] = []
         while location < text.length && location <= NSMaxRange(characters) {
             let glyph = layout.glyphIndexForCharacter(at: location)
@@ -44,7 +45,7 @@ final class LineNumbers: NSRulerView {
         if text.length == 0 || editor.string.hasSuffix("\n") {
             let fragment = layout.extraLineFragmentRect
             if fragment.intersects(visible) || text.length == 0 {
-                let finalNumber = editor.string.reduce(1) { $1 == "\n" ? $0 + 1 : $0 }
+                let finalNumber = cached?.total ?? editor.string.utf16.reduce(1) { $1 == 10 ? $0 + 1 : $0 }
                 let point = convert(NSPoint(x: 0, y: fragment.minY + editor.textContainerOrigin.y), from: editor)
                 labels.append((finalNumber, point))
             }

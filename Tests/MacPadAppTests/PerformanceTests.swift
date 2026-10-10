@@ -6,14 +6,16 @@ final class PerformanceTests: XCTestCase {
     @MainActor func testOneMiBDocument() async throws { try await sampleDocument(mebibytes: 1) }
     @MainActor func testTenMiBDocument() async throws { try await sampleDocument(mebibytes: 10) }
     @MainActor func testFiftyMiBDocument() async throws { try await sampleDocument(mebibytes: 50) }
+    @MainActor func testTenMiBCzechDocument() async throws {
+        try await sampleDocument(mebibytes: 10, line: "Příliš žluťoučký kůň úpěl ďábelské ódy 0123456789\n")
+    }
 
     @MainActor
-    private func sampleDocument(mebibytes: Int) async throws {
+    private func sampleDocument(mebibytes: Int, line: String = String(repeating: "0123456789", count: 7) + "\n") async throws {
         _ = NSApplication.shared
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
-        let line = String(repeating: "0123456789", count: 7) + "\n"
         let content = String(repeating: line, count: mebibytes * 1_048_576 / line.utf8.count)
         let url = directory.appendingPathComponent("sample.txt")
         try Data(content.utf8).write(to: url)
@@ -56,7 +58,7 @@ final class PerformanceTests: XCTestCase {
         let open = openTimes.sorted()
         let edit = editTimes.sorted()
         let navigation = navigationTimes.sorted()
-        print(String(format: "PERFORMANCE %d MiB open median=%.3fs max=%.3fs edit median=%.3fs max=%.3fs navigation median=%.3fs max=%.3fs",
-                     mebibytes, open[2], open[4], edit[2], edit[4], navigation[2], navigation[4]))
+        print(String(format: "PERFORMANCE %d MiB %@ open median=%.3fs max=%.3fs edit median=%.3fs max=%.3fs navigation median=%.3fs max=%.3fs",
+                     mebibytes, line.utf8.count == line.utf16.count ? "ASCII" : "Unicode", open[2], open[4], edit[2], edit[4], navigation[2], navigation[4]))
     }
 }
