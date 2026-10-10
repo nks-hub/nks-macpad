@@ -24,10 +24,10 @@
 - 📄 **Plain text files** - Open, Save, Save As, Save All; UTF-8, UTF-16 and Windows-1250 with encoding, BOM and line endings preserved
 - 💾 **Draft recovery** - Restores drafts, tab order, selection and scroll position after relaunch; recovery copies never touch the original file
 - 🔍 **Search** - Find and replace in the current document, search across all open tabs and jump straight to a match
-- ⌨️ **Fast navigation** - Tab switcher, command palette, macOS shortcuts and selected Windows-style Ctrl shortcuts
+- ⌨️ **Keyboard navigation** - Tab switcher, command palette, macOS shortcuts and selected Windows-style Ctrl shortcuts
 - ✂️ **Line operations** - Insert date/time, duplicate, move, sort and remove exact duplicates; all undoable
 - 🎨 **Workspace** - Light, dark and system appearance, font, zoom, word wrap, line numbers, focus mode and always-on-top
-- ⚡ **Quick note** - Compact window, optional menu bar item and configurable global shortcut
+- ⚡ **Quick note** - Compact window, optional menu bar item and configurable global shortcut; works only while MacPad is running
 - 🌐 **Localization** - English and Czech UI
 
 Markdown preview, split view, saved-version history and diff are planned for 1.1 and are not part of the app yet.
