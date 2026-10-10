@@ -1,52 +1,47 @@
-[![Platforma macOS](https://img.shields.io/badge/platforma-macOS-111827)](#požadavky)
-[![Swift a AppKit](https://img.shields.io/badge/Swift-AppKit-F05138?logo=swift&logoColor=white)](#sestavení-ze-zdrojů)
-[![Licence MIT](https://img.shields.io/badge/licence-MIT-2563EB)](LICENSE)
-
 # MacPad
 
-MacPad je textový editor pro macOS s kartami a ovládáním inspirovaným Poznámkovým blokem ve Windows 11. Otevřete jej, začněte psát a k rozepsaným poznámkám se vraťte po dalším spuštění. Důležité karty lze připnout a text najít napříč otevřenými poznámkami.
+[![Platform](https://img.shields.io/badge/platform-macOS%2014+-111827.svg)](#requirements)
+[![Swift](https://img.shields.io/badge/Swift-AppKit-F05138.svg?logo=swift&logoColor=white)](https://developer.apple.com/documentation/appkit)
+[![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)](#installation)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Projekt je ve vývojové verzi 0.1.0.** Aktuálně je určený k sestavení ze zdrojů; podepsaný a notarizovaný instalační balík zatím není vydaný. MacPad je samostatný projekt NKS Hub, není produktem Microsoftu.
+> Native tabbed text editor for macOS with draft recovery, pinned notes and Windows 11 Notepad-style controls. Swift + AppKit, no external dependencies.
 
-## Jak vypadá
-
-![MacPad ve světlém režimu s připnutou poznámkou a třemi kartami](docs/screenshots/macpad-light.png)
+![MacPad in light mode with a pinned note and three tabs](docs/screenshots/macpad-light.png)
 
 <details>
-<summary>Tmavý režim</summary>
+<summary>Dark mode</summary>
 
-![MacPad v tmavém režimu](docs/screenshots/macpad-dark.png)
+![MacPad in dark mode](docs/screenshots/macpad-dark.png)
 
 </details>
 
-Obrázky pocházejí ze skutečně spuštěné aplikace. Obsah poznámek je smyšlený.
+---
 
-## Co umí
+## Features
 
-- **Poznámky v kartách:** nové karty, přepínání, připnutí, vlastní názvy konceptů, přesun mezi okny a znovuotevření zavřeného souboru.
-- **Běžné textové soubory:** otevřít, uložit, uložit jako a uložit vše. UTF-8, UTF-16 a Windows-1250; zachování kódování, BOM a konců řádků.
-- **Návrat k rozepsané práci:** obnova konceptů, pořadí karet, výběru a posunu. Obnovovací kopie nemění původní soubor.
-- **Hledání:** hledat a nahradit v aktuálním dokumentu, vyhledat text ve všech otevřených kartách a přeskočit přímo na výsledek.
-- **Rychlé ovládání:** přepínač karet, nabídka příkazů, macOS zkratky a vybrané Ctrl zkratky známé z Windows.
-- **Úpravy řádků:** datum a čas, duplikace, přesun, řazení a odstranění přesných duplicit ve výběru; změny lze vrátit.
-- **Vlastní pracovní prostředí:** světlý, tmavý a systémový vzhled, písmo, přiblížení, zalamování, čísla řádků, soustředění a okno navrchu.
-- **Rychlá poznámka:** kompaktní okno, volitelná položka v horní liště macOS a nastavitelná zkratka. Funguje, když aplikace běží.
+- 🗂️ **Tabbed notes** - New tabs, pinning, custom draft names, moving tabs between windows, reopening closed files
+- 📄 **Plain text files** - Open, Save, Save As, Save All; UTF-8, UTF-16 and Windows-1250 with encoding, BOM and line endings preserved
+- 💾 **Draft recovery** - Restores drafts, tab order, selection and scroll position after relaunch; recovery copies never touch the original file
+- 🔍 **Search** - Find and replace in the current document, search across all open tabs and jump straight to a match
+- ⌨️ **Fast navigation** - Tab switcher, command palette, macOS shortcuts and selected Windows-style Ctrl shortcuts
+- ✂️ **Line operations** - Insert date/time, duplicate, move, sort and remove exact duplicates; all undoable
+- 🎨 **Workspace** - Light, dark and system appearance, font, zoom, word wrap, line numbers, focus mode and always-on-top
+- ⚡ **Quick note** - Compact window, optional menu bar item and configurable global shortcut
+- 🌐 **Localization** - English and Czech UI
 
-Rozhraní je česky a anglicky. Editor pracuje s čistým textem. Náhled Markdownu, rozdělený pohled, historie uložených verzí a porovnání změn jsou navržené pro další verzi, zatím nejsou součástí aplikace.
+Markdown preview, split view, saved-version history and diff are planned for 1.1 and are not part of the app yet.
 
-## Požadavky
+## Requirements
 
-| Oblast | Aktuální stav |
-| --- | --- |
-| Systém | Cíl sestavení je macOS 14 a novější; běh zatím ověřen na macOS 15.7.4 |
-| Procesor | Ověřeno na Apple Silicon; Intel zatím neověřen |
-| Vývoj | Xcode 26.3 a XcodeGen 2.44.1 |
-| Běhové závislosti | Nativní AppKit, Foundation, CryptoKit a Carbon; žádné externí balíčky |
-| Distribuce | Vývojový nepodepsaný build ze zdrojů |
+- macOS 14 or later (verified on macOS 15.7.4)
+- Apple Silicon (verified); Intel not verified yet
+- Xcode 26.3 and [XcodeGen](https://github.com/yonaskolb/XcodeGen) 2.44.1 for building
+- No runtime dependencies beyond AppKit, Foundation, CryptoKit and Carbon
 
-## Sestavení ze zdrojů
+## Installation
 
-Nainstalujte Xcode a [XcodeGen](https://github.com/yonaskolb/XcodeGen). XcodeGen musí být v PATH; případně nastavte proměnnou `XCODEGEN` na jeho spustitelný soubor.
+MacPad is in development (0.1.0). A signed and notarized release is not published yet, so build it from source:
 
 ```sh
 git clone https://github.com/nks-hub/nks-macpad.git
@@ -55,65 +50,67 @@ bash scripts/build.sh build
 open build/DerivedData/Build/Products/Debug/MacPad.app
 ```
 
-Skript generuje projekt z `project.yml`. Generovaný `MacPad.xcodeproj`, sestavení a místní nastavení nepatří do Gitu.
+XcodeGen must be in `PATH`, or set `XCODEGEN` to its executable. The script generates the project from `project.yml`; the generated `MacPad.xcodeproj` and build output are not tracked in Git.
 
-Identifikátor aplikace je `com.nkshub.macpad`. Společná knihovna používá `com.nkshub.macpad.core`.
+Bundle identifiers: `com.nkshub.macpad` (app) and `com.nkshub.macpad.core` (shared framework).
 
-## Klávesové zkratky
+## Keyboard Shortcuts
 
-| Akce | Zkratka |
-| --- | --- |
-| Nová karta / nové okno | ⌘N nebo ⌘T / ⇧⌘N |
-| Otevřít / uložit / uložit jako | ⌘O / ⌘S / ⇧⌘S |
-| Uložit vše | ⌥⌘S |
-| Zavřít kartu / okno | ⌘W / ⇧⌘W |
-| Hledat / nahradit | ⌘F / ⌥⌘F |
-| Hledat ve všech kartách | ⇧⌘F |
-| Přepínač karet / příkazy | ⌘K / ⇧⌘P |
-| Znovu otevřít zavřený soubor | ⇧⌘T |
-| Zpět / znovu | ⌘Z / ⇧⌘Z |
-| Tisk | ⌘P |
+| Action | Shortcut |
+|--------|----------|
+| New tab / new window | ⌘N or ⌘T / ⇧⌘N |
+| Open / Save / Save As | ⌘O / ⌘S / ⇧⌘S |
+| Save All | ⌥⌘S |
+| Close tab / window | ⌘W / ⇧⌘W |
+| Find / Replace | ⌘F / ⌥⌘F |
+| Find in all tabs | ⇧⌘F |
+| Tab switcher / command palette | ⌘K / ⇧⌘P |
+| Reopen closed file | ⇧⌘T |
+| Undo / Redo | ⌘Z / ⇧⌘Z |
+| Print | ⌘P |
 
-Ctrl aliasy platí uvnitř editoru a nepřepisují systémovou klávesnici. Globální zkratka rychlé poznámky se zapíná až jejím nastavením.
+Ctrl aliases work inside the editor and do not override the system keyboard. The quick note global shortcut is off until you set it.
 
-## Ukládání a soukromí
+## Saving and Privacy
 
-Soubory na disku se mění až po příkazu k uložení. Při změně souboru jiným programem aplikace upozorní na konflikt. Pokud ke změně dojde těsně během nahrazení souboru, zachová externí obsah v samostatné kopii a ukáže její cestu.
+- Files on disk change only after an explicit save. If another program modifies an open file, MacPad reports the conflict; a change during the atomic replace is kept in a separate copy and its path is shown.
+- Drafts live in `~/Library/Application Support/MacPad`. They are not encrypted. Recovery can be turned off in Settings; discarding a draft removes it from both recovery copies.
+- No account, no cloud sync, no telemetry. Saving into a synced folder works, but concurrent edits can still conflict.
 
-Rozepsané koncepty jsou v `~/Library/Application Support/MacPad`. Nejde o šifrovaný trezor. Obnovu lze vypnout v nastavení; před vypnutím je potřeba uložit nebo zavřít změněné poznámky. Výslovné zahození odstraňuje koncept z obou obnovovacích kopií.
-
-MacPad nevyžaduje účet, nepřidává vlastní cloudovou synchronizaci a neodesílá obsah poznámek. Běžný soubor můžete uložit do své synchronizované složky, souběžné editace však dál mohou vyvolat konflikt.
-
-## Testy a ověření
+## Testing
 
 ```sh
 bash scripts/build.sh test
-```
-
-Při review implementace prošlo na macOS 15.7.4 **76 automatických testů** v konfiguraci Release: 37 testů souborové vrstvy a obnovy a 39 testů AppKitu, životního cyklu a výkonu. Opravy se týkaly mimo jiné zahozených změn při hromadném ukládání, hranic Unicode a řádků, obnovy posunu, kódování a rušení otevíraných souborů.
-
-Na Apple M1 Pro trvalo otevření 50 MiB textu s krátkými ASCII řádky v mediánu 643 ms a vložení znaku na konec 9 ms. Měření úpravy nezahrnuje následné vykreslení. Postup, podmínky a výsledky pro další velikosti jsou v [záznamu měření](docs/VALIDATION.md#měření-výkonu).
-
-Pro testy v konfiguraci Release:
-
-```sh
 CONFIGURATION=Release bash scripts/build.sh test
 ```
 
-Přehled konkrétních výsledků a zbývajících mezer je v [záznamu ověření](docs/VALIDATION.md). Automatické testy nenahrazují ověření fyzické klávesnice, VoiceOveru ani všech podporovaných verzí macOS. Podepisování a notarizace zůstávají před veřejným distribučním vydáním.
+76 automated tests pass on macOS 15.7.4 in Release: 37 for the file layer and recovery, 39 for AppKit, lifecycle and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 643 ms (median) and inserting a character at the end 9 ms. Details are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
-Pro vlastní izolované testování lze nastavit `MACPAD_SESSION_DIR` na samostatnou složku. Nepoužívejte skutečné osobní poznámky jako testovací data.
+Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 
-## Vývoj a hlášení chyb
+## Contributing
 
-- [Plán](PLAN.md) a [TODO](TODO.md) popisují další práci.
-- [Návrh chování](docs/plans/2026-10-09-macpad-design.md) vysvětluje ukládání, obnovu a rozšíření.
-- Chyby a návrhy patří do [GitHub Issues](https://github.com/nks-hub/nks-macpad/issues).
+Contributions are welcome! For major changes, please open an issue first.
 
-K hlášení přidejte verzi macOS, architekturu, revizi aplikace a kroky k reprodukci. Přiložený příklad má obsahovat pouze smyšlený text. Do změn neposílejte osobní dokumenty, přístupy, podpisové klíče ani interní adresy.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: description'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## Licence
+When reporting a bug, include the macOS version, architecture, app revision and steps to reproduce. Use made-up text in examples.
 
-[MIT](LICENSE). Kód můžete používat, upravovat a šířit za podmínek této licence.
+## Support
 
-Projekt [NKS Hub](https://github.com/nks-hub).
+- 📧 **Email:** dev@nks-hub.cz
+- 🐛 **Bug reports:** [GitHub Issues](https://github.com/nks-hub/nks-macpad/issues)
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/nks-hub">NKS Hub</a>
+</p>
