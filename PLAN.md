@@ -2,7 +2,7 @@
 
 Probíhá implementace vývojové verze 0.1.0. Návrh funkcí a pravidel je v [analýze](docs/plans/2026-10-09-macpad-design.md); stav jednotlivých úkolů je v [TODO](TODO.md). Níže jsou cíle pro dokončení verze 1.0, nikoli prohlášení o jejich splnění.
 
-Testování bylo znovu zahájeno společně s úplným code review. Na macOS 15.7.4 prošlo 76 testů zdrojů odpovídajících revizi b39439c v konfiguraci Release. Změřené jsou i první výsledky výkonu pro 1/10/50 MiB. Rozsah důkazů a zbývající mezery jsou v [záznamu ověření](docs/VALIDATION.md). Sdílený Mac se používá jen po kontrole cizí aktivity; volný relay sám o sobě není důkaz volné obrazovky.
+Testování bylo znovu zahájeno společně s úplným code review. Na macOS 15.7.4 prošlo 89 testů zdrojů odpovídajících revizi 82ab271 v konfiguraci Release. Změřené jsou i první výsledky výkonu pro 1/10/50 MiB. Rozsah důkazů a zbývající mezery jsou v [záznamu ověření](docs/VALIDATION.md). Sdílený Mac se používá jen po kontrole cizí aktivity; volný relay sám o sobě není důkaz volné obrazovky.
 
 Ve zdrojích jsou připravené editor, bezpečné souborové operace, obnova relace i rozšíření E01 až E08. Rozhraní má dokumentové karty, nabídku uvnitř okna, stavový řádek a samostatné části nastavení. Nově je otevírání souborů přesunuté mimo hlavní vlákno a má příkaz ke zrušení. Dokončení těchto bodů závisí na jejich ověření, ne pouze na přítomnosti kódu.
 

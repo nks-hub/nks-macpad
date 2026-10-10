@@ -84,7 +84,7 @@ bash scripts/build.sh test
 CONFIGURATION=Release bash scripts/build.sh test
 ```
 
-76 automated tests pass on macOS 15.7.4 in Release: 37 for the file layer and recovery, 39 for AppKit, lifecycle and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 643 ms (median) and inserting a character at the end 9 ms. Details are in [docs/VALIDATION.md](docs/VALIDATION.md).
+89 automated tests pass on macOS 15.7.4 in Release: 40 for the file layer and recovery, 49 for AppKit, lifecycle and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 687 ms (median) and inserting a character at the end 9 ms; in a 10 MiB file of Czech text the insert takes 22 ms. Details are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 

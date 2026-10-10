@@ -2,15 +2,15 @@
 
 Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritéria jsou v [plánu](PLAN.md).
 
-Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Po úplném review a opravách prošlo 76 automatických testů na Macu. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
+Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Po druhém review a opravách prošlo 89 automatických testů na Macu. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
 
 ## Před pokračováním v ověřování
 
-- [x] Sestavit zdroje odpovídající b39439c v Release a spustit připravené testy: 76 prošlo.
-- [ ] Ověřit nové nastavení, změnu zkratky, vkládání CRLF textu a otevírání souborů na pozadí včetně zrušení.
-- [ ] Ověřit klikání, zavírání a přetažení nových karet, nabídky a světlé i tmavé vykreslení.
+- [x] Sestavit zdroje odpovídající 82ab271 v Release a spustit připravené testy: 89 prošlo.
+- [x] Ověřit nové nastavení, změnu zkratky, vkládání CRLF textu a otevírání souborů na pozadí včetně zrušení (zrušení fronty jen testem, 106 MB se načte dřív, než zrušení dorazí).
+- [x] Ověřit klikání, zavírání a přetažení nových karet, nabídky a světlé i tmavé vykreslení.
 - [x] Zachytit skutečné světlé a tmavé UI a ověřit výběr karty, výsledek hledání, rychlou poznámku a uložení přes GUI.
-- [ ] Prověřit ochranu obnovy při vynuceném spuštění více procesů nad stejnou datovou složkou.
+- [x] Prověřit ochranu obnovy při vynuceném spuštění více procesů nad stejnou datovou složkou.
 
 ## Příprava
 
