@@ -75,6 +75,7 @@ public enum SessionStoreError: Error, LocalizedError {
     case invalidScrollPosition
     case invalidIdentity
     case invalidActiveNote
+    case inUse
 
     public var errorDescription: String? {
         switch self {
@@ -92,6 +93,8 @@ public enum SessionStoreError: Error, LocalizedError {
             return "The saved session contains duplicate window or note identifiers."
         case .invalidActiveNote:
             return "The saved active note does not belong to its window."
+        case .inUse:
+            return "Another MacPad process is using this data folder."
         }
     }
 }
@@ -111,9 +114,31 @@ public final class SessionStore {
     private var backupURL: URL { directory.appendingPathComponent("session.backup.json") }
     private let files = FileManager.default
     private var hasInaccessibleCopy = false
+    private var lockDescriptor: Int32 = -1
 
     public init(directory: URL) {
         self.directory = directory
+    }
+
+    deinit {
+        if lockDescriptor >= 0 { close(lockDescriptor) }
+    }
+
+    /// Takes an exclusive advisory lock on the data folder, held until the store is released.
+    /// Two processes writing the same session would each drop the other's drafts on save.
+    public func lock() throws {
+        guard lockDescriptor < 0 else { return }
+        try files.createDirectory(at: directory, withIntermediateDirectories: true,
+                                  attributes: [.posixPermissions: 0o700])
+        let descriptor = open(directory.appendingPathComponent("session.lock").path, O_RDWR | O_CREAT | O_CLOEXEC, 0o600)
+        guard descriptor >= 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
+        guard flock(descriptor, LOCK_EX | LOCK_NB) == 0 else {
+            let code = errno
+            close(descriptor)
+            if code == EWOULDBLOCK { throw SessionStoreError.inUse }
+            throw POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO)
+        }
+        lockDescriptor = descriptor
     }
 
     public func load() throws -> SessionSnapshot? {

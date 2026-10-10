@@ -24,6 +24,17 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: directory.path))
     }
 
+    func testSecondStoreCannotLockFolderUntilFirstIsReleased() throws {
+        var first: SessionStore? = SessionStore(directory: directory)
+        try first?.lock()
+        let second = SessionStore(directory: directory)
+        XCTAssertThrowsError(try second.lock()) { error in
+            guard case SessionStoreError.inUse = error else { return XCTFail("\(error)") }
+        }
+        first = nil
+        XCTAssertNoThrow(try second.lock())
+    }
+
     func testRestoresUnsavedUnicodeAndWindowState() throws {
         let note = NoteSnapshot(text: "Žlutý 🦋\ntext", title: "Nápad", pinned: true,
                                 selectionLocation: 6, selectionLength: 2, scrollY: 42)

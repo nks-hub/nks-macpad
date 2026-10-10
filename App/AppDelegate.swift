@@ -59,6 +59,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        do {
+            try sessionStore.lock()
+        } catch SessionStoreError.inUse {
+            let alert = NSAlert()
+            alert.messageText = "MacPad"
+            alert.informativeText = L("MacPad už běží nad stejnou složkou poznámek. Přepněte se do otevřené aplikace.",
+                                      "MacPad is already running with the same notes folder. Switch to the open app.")
+            alert.runModal()
+            exit(0)
+        } catch {
+            sessionFailure = error.localizedDescription
+        }
         installMenus()
         Preferences.applyAppearance()
         do {
