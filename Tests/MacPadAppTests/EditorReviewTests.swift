@@ -165,6 +165,27 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testClickingInactiveTabSelectsIt() throws {
+        let editor = makeEditor(text: "first")
+        defer { finish() }
+        let first = try XCTUnwrap(editor.active)
+        editor.addNote(TextDocument())
+        editor.showWindow(nil)
+        editor.window?.contentView?.layoutSubtreeIfNeeded()
+        let window = try XCTUnwrap(editor.window)
+        let tab = try XCTUnwrap(editor.tabs.arrangedSubviews.compactMap { $0 as? TabButton }.first { $0.noteID == first.id })
+        let point = tab.convert(NSPoint(x: tab.bounds.midX - 30, y: tab.bounds.midY), to: nil)
+        XCTAssertTrue(window.contentView?.hitTest(window.contentView!.convert(point, from: nil)) === tab)
+        func mouse(_ type: NSEvent.EventType) throws -> NSEvent {
+            try XCTUnwrap(NSEvent.mouseEvent(with: type, location: point, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                             windowNumber: window.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1))
+        }
+        NSApp.postEvent(try mouse(.leftMouseUp), atStart: false)
+        window.sendEvent(try mouse(.leftMouseDown))
+        XCTAssertTrue(editor.active === first)
+    }
+
+    @MainActor
     func testClosingBackgroundTabKeepsActiveDocument() {
         let oldRestore = UserDefaults.standard.object(forKey: "restore")
         Preferences.restore = false

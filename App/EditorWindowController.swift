@@ -155,6 +155,8 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         tabScroller.drawsBackground = false
         tabScroller.translatesAutoresizingMaskIntoConstraints = false
         tabScroller.borderType = .noBorder
+        // Under the transparent title bar the scroll view would inset 28 pt and drop clicks on the top of each tab.
+        tabScroller.automaticallyAdjustsContentInsets = false
         tabs.translatesAutoresizingMaskIntoConstraints = false
         titlebar.addSubview(tabScroller)
         let controls = NSStackView(views: [addTabButton, tabListButton])
