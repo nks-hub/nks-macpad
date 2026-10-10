@@ -9,6 +9,8 @@ extension EditorWindowController {
             let revision = note.revision
             let expected = note.stamp
             let encoding = note.format.encoding
+            // Windows-1250 and BOMless UTF-16 decode almost any bytes, so a rewritten file could load as garbage.
+            let ambiguous = encoding == .windows1250 || (!note.format.hasBOM && (encoding == .utf16LE || encoding == .utf16BE))
             app.diskQueue.async { [weak self, weak note] in
                 do {
                     let actual = try TextFileStore.stamp(url)
@@ -27,7 +29,7 @@ extension EditorWindowController {
                     DispatchQueue.main.async {
                         guard let self, let note, self.notes.contains(where: { $0 === note }), note.revision == revision, !note.saving,
                               note.fileURL == url, !self.app.editingLocked else { return }
-                        if note.isDocumentEdited || loaded == nil {
+                        if note.isDocumentEdited || loaded == nil || ambiguous {
                             note.externalChange = true
                         } else if let loaded {
                             note.text = loaded.text

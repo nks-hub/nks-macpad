@@ -15,7 +15,8 @@ public struct LoadedText: Sendable {
 
 public enum TextFileStoreError: Error, Equatable {
     case conflict(expected: FileStamp, actual: FileStamp)
-    case conflictRecovered(URL)
+    /// Our text was written; the external version that raced the replace is kept at the URL.
+    case conflictRecovered(URL, written: FileStamp)
     case unsupportedFile
     case coordinationFailed
 }
@@ -62,7 +63,8 @@ public enum TextFileStore {
             let temporary = target.deletingLastPathComponent().appendingPathComponent(".macpad-\(UUID().uuidString)")
             let manager = FileManager.default
             defer { try? manager.removeItem(at: temporary) }
-            try writeTemporary(data, to: temporary)
+            // A new file gets the usual umask mode; a replaced file keeps its own.
+            try writeTemporary(data, to: temporary, mode: actual == .missing ? 0o666 : 0o600)
             let latest = try currentStamp(target)
             guard latest == expected else { throw TextFileStoreError.conflict(expected: expected, actual: latest) }
             try beforeReplace()
@@ -75,7 +77,7 @@ public enum TextFileStore {
                                               options: .withoutDeletingBackupItem)
                 // An uncoordinated writer can change the file after the last hash check.
                 guard try currentStamp(backup) == expected else {
-                    throw TextFileStoreError.conflictRecovered(backup)
+                    throw TextFileStoreError.conflictRecovered(backup, written: digest(data))
                 }
                 try manager.removeItem(at: backup)
             }
@@ -87,8 +89,8 @@ public enum TextFileStore {
         .existing(sha256: SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined())
     }
 
-    private static func writeTemporary(_ data: Data, to url: URL) throws {
-        let descriptor = open(url.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0o600)
+    static func writeTemporary(_ data: Data, to url: URL, mode: mode_t) throws {
+        let descriptor = open(url.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, mode)
         guard descriptor >= 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
         let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
         do {

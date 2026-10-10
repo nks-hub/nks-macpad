@@ -187,16 +187,33 @@ final class TextFileTests: XCTestCase {
         let file = directory.appendingPathComponent("note.txt")
         let old = try TextFileStore.write("original", format: TextFormat(), to: file, expected: .missing)
         var recovery: URL?
+        var written: FileStamp?
         XCTAssertThrowsError(try TextFileStore.write("ours", format: TextFormat(), to: file, expected: old,
                                                     beforeReplace: { try Data("external".utf8).write(to: file) })) {
-            guard case TextFileStoreError.conflictRecovered(let saved) = $0 else {
+            guard case TextFileStoreError.conflictRecovered(let saved, let stamp) = $0 else {
                 return XCTFail("Expected recovery path, received \($0)")
             }
             recovery = saved
+            written = stamp
         }
         let backup = try XCTUnwrap(recovery)
         XCTAssertEqual(try Data(contentsOf: backup), Data("external".utf8))
         XCTAssertEqual(try Data(contentsOf: file), Data("ours".utf8))
+        XCTAssertEqual(written, try TextFileStore.stamp(file))
+    }
+
+    func testNewFileFollowsUmaskAndReplacedFileKeepsItsMode() throws {
+        let file = directory.appendingPathComponent("shared.txt")
+        let mask = umask(0)
+        umask(mask)
+        func mode() throws -> mode_t {
+            mode_t(truncating: try FileManager.default.attributesOfItem(atPath: file.path)[.posixPermissions] as! NSNumber)
+        }
+        let first = try TextFileStore.write("a", format: TextFormat(), to: file, expected: .missing)
+        XCTAssertEqual(try mode(), 0o666 & ~mask)
+        try FileManager.default.setAttributes([.posixPermissions: 0o640], ofItemAtPath: file.path)
+        _ = try TextFileStore.write("b", format: TextFormat(), to: file, expected: first)
+        XCTAssertEqual(try mode(), 0o640)
     }
 
     func testSymlinkWritesTargetAndHardlinksShareIdentity() throws {

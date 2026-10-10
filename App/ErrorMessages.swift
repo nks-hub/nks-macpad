@@ -7,7 +7,7 @@ func fileErrorMessage(_ error: Error) -> String {
         case .conflict:
             return L("Soubor na disku se změnil. Uložte kopii, nebo znovu načtěte aktuální soubor. Vaše rozepsané změny zůstávají v kartě.",
                      "The file on disk has changed. Save a copy or reload the current file. Your edits remain in the tab.")
-        case .conflictRecovered(let url):
+        case .conflictRecovered(let url, _):
             return L("Souběžná změna byla zachována zde: ", "A concurrent change was preserved here: ") + url.path
         case .unsupportedFile:
             return L("Vyberte běžný textový soubor.", "Choose a regular text file.")

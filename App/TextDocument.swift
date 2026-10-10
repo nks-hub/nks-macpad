@@ -3,7 +3,17 @@ import MacPadCore
 
 final class TextDocument: NSDocument {
     let id: UUID
-    var text = "" { didSet { dirtyCache = nil; utf16Length = (text as NSString).length } }
+    var text = "" {
+        didSet {
+            dirtyCache = nil
+            utf16Length = (text as NSString).length
+            // Reloads replace text of inactive tabs; an out-of-range selection makes every session save fail.
+            if NSMaxRange(selection) > utf16Length {
+                let location = min(selection.location, utf16Length)
+                selection = NSRange(location: location, length: min(selection.length, utf16Length - location))
+            }
+        }
+    }
     private(set) var utf16Length = 0
     var savedText: String? { didSet { dirtyCache = nil } }
     var format = TextFormat() { didSet { dirtyCache = nil } }

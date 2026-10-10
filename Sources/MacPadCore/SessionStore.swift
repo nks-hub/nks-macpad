@@ -246,8 +246,11 @@ public final class SessionStore {
         }
     }
 
+    /// Synced before the rename: save() deletes the old backup first, so unsynced copies could both be lost on power failure.
     private func writePrivate(_ data: Data, to url: URL) throws {
-        try data.write(to: url, options: .atomic)
-        try files.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+        let temporary = directory.appendingPathComponent(".session-\(UUID().uuidString)")
+        defer { try? files.removeItem(at: temporary) }
+        try TextFileStore.writeTemporary(data, to: temporary, mode: 0o600)
+        guard rename(temporary.path, url.path) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
     }
 }

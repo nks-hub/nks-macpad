@@ -111,6 +111,55 @@ final class LifecycleReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testReloadingShorterFileInBackgroundTabKeepsSessionSaving() async throws {
+        _ = NSApplication.shared
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let file = directory.appendingPathComponent("long.txt")
+        try Data(String(repeating: "a", count: 1000).utf8).write(to: file)
+        let app = AppDelegate(sessionDirectory: directory.appendingPathComponent("session"))
+        let editor = app.makeWindow()
+        let background = TextDocument()
+        try background.load(file)
+        background.selection = NSRange(location: 900, length: 5)
+        editor.addNote(background)
+        editor.addNote(TextDocument())
+        XCTAssertNotEqual(editor.activeID, background.id)
+        try Data("short".utf8).write(to: file)
+        try background.load(file, encoding: background.format.encoding)
+        editor.reload(background)
+        let saved = expectation(description: "Session saved")
+        app.changed()
+        app.flushSession { ok in XCTAssertTrue(ok); saved.fulfill() }
+        await fulfillment(of: [saved], timeout: 5)
+        XCTAssertEqual(background.selection, NSRange(location: 5, length: 0))
+        XCTAssertEqual(try app.sessionStore.load()?.windows.flatMap(\.notes).first { $0.id == background.id }?.text, "short")
+    }
+
+    @MainActor
+    func testWindows1250NoteIsNotSilentlyReloadedAsUTF8() async throws {
+        _ = NSApplication.shared
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let file = directory.appendingPathComponent("legacy.txt")
+        try TextFileCodec.encode("Příliš", format: TextFormat(encoding: .windows1250, lineEnding: .lf)).write(to: file)
+        let app = AppDelegate(sessionDirectory: directory.appendingPathComponent("session"))
+        let editor = app.makeWindow()
+        let note = TextDocument()
+        try note.load(file, encoding: .windows1250)
+        editor.addNote(note)
+        // These UTF-8 bytes also decode as Windows-1250 ("PĹ™Ă­liĹˇ").
+        try Data("Příliš".utf8).write(to: file)
+        editor.checkExternalChanges()
+        let flagged = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in note.externalChange }, object: nil)
+        await fulfillment(of: [flagged], timeout: 5)
+        XCTAssertEqual(note.text, "Příliš")
+        XCTAssertEqual(note.format.encoding, .windows1250)
+    }
+
+    @MainActor
     func testDirtyCacheInvalidatesForContentFormatAndSavedBaseline() {
         let note = TextDocument()
         note.text = "é"

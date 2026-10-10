@@ -336,6 +336,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             } catch {
                 DispatchQueue.main.async {
                     note.saving = false
+                    if case TextFileStoreError.conflictRecovered(_, let written) = error {
+                        note.fileURL = url
+                        note.stamp = written
+                        note.savedText = text
+                        note.savedFormat = format
+                        self.changed()
+                    }
                     self.handleSaveError(error, note: note, completion: completion)
                 }
             }
@@ -343,7 +350,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func handleSaveError(_ error: Error, note: TextDocument, completion: @escaping (Bool) -> Void) {
-        if case TextFileStoreError.conflictRecovered(let recovered) = error {
+        if case TextFileStoreError.conflictRecovered(let recovered, _) = error {
             let alert = NSAlert()
             alert.messageText = L("Při ukládání vznikla souběžná změna.", "Another program changed the file while saving.")
             alert.informativeText = L("Externí verze byla zachována zde:\n", "The external version was preserved here:\n") + recovered.path
@@ -455,7 +462,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         try self.sessionStore.save(SessionSnapshot(windows: []))
                         DispatchQueue.main.async { self.finishQuit(true) }
                     } catch {
-                        DispatchQueue.main.async { self.showError(error.localizedDescription); self.finishQuit(false) }
+                        // Recovery is off and every note was resolved; the old files stay untouched.
+                        DispatchQueue.main.async { self.showError(error.localizedDescription); self.finishQuit(true) }
                     }
                 }
             }
