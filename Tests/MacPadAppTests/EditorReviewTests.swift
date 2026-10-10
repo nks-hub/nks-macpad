@@ -178,6 +178,17 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testSwitchingTabMarksSessionForSaving() throws {
+        let editor = makeEditor(text: "first")
+        defer { finish() }
+        let first = try XCTUnwrap(editor.active)
+        editor.addNote(TextDocument())
+        editor.app.sessionPending = false
+        editor.select(first.id)
+        XCTAssertTrue(editor.app.sessionPending)
+    }
+
+    @MainActor
     func testAlwaysOnTopIsVisibleInStatus() {
         let editor = makeEditor(text: "x")
         defer { finish() }

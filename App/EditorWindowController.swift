@@ -276,6 +276,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         // Otherwise typing after coming back to a tab joins the earlier typing and one undo removes both.
         textView?.breakUndoCoalescing()
         activeID = id
+        app.sessionPending = true
         refresh()
         checkExternalChanges()
     }
