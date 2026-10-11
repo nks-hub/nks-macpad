@@ -38,9 +38,9 @@
 
 ## Requirements
 
-- macOS 15.7.4 on Apple Silicon is verified; macOS 14 remains untested
+- macOS 14 or later on Apple Silicon; automated tests verified on 14.8.9 and 15.7.4, GUI acceptance on 15.7.4
 - Intel is not supported by the arm64 package
-- Xcode 26.3 and [XcodeGen](https://github.com/yonaskolb/XcodeGen) 2.44.1 for building
+- Xcode (tested with 16.2 and 26.3) and [XcodeGen](https://github.com/yonaskolb/XcodeGen) 2.44.1 for building
 - No runtime dependencies beyond AppKit, Foundation, CryptoKit and Carbon
 
 ## Installation
@@ -103,9 +103,9 @@ Revision `1b8cf91` passed 143 automated tests on macOS 15.7.4 in Release: 48 for
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 
-The `macOS 14 tests` GitHub Actions workflow can be started manually. It checks the runner's OS and architecture, then runs the Release suite on macOS 14 ARM with Xcode 16.2 and XcodeGen 2.44.1. GitHub plans to retire that runner on November 2, 2026; the workflow will need a replacement after that date.
+The `macOS 14 tests` GitHub Actions workflow can be started manually. Revision `49d513c` passed all 143 tests on macOS 14.8.9 ARM with Xcode 16.2 and XcodeGen 2.44.1 ([run](https://github.com/nks-hub/nks-macpad/actions/runs/38153467337)). This is automated coverage, not a repeat of the manual GUI walkthrough. GitHub plans to retire that runner on November 2, 2026; the workflow will need a replacement after that date.
 
-`bash scripts/release.sh --help` describes release packaging. It requires a Developer ID Application identity in `SIGN_IDENTITY` and a notarytool keychain profile in `NOTARY_PROFILE`. The script builds a clean Git revision for Apple Silicon, signs and notarizes it, checks Gatekeeper, then places a ZIP, SHA-256 checksum and revision manifest in `dist`. It does not publish a release. Version 0.1.0 from `3206e99` passed signing, notarization, quarantined launch and replacement of an earlier development build on macOS 15.7.4. That package predates the printing fix. Remaining release gates are tracked in [TODO.md](TODO.md), including the Windows reference, remaining performance checks, physical keyboards and macOS 14.
+`bash scripts/release.sh --help` describes release packaging. It requires a Developer ID Application identity in `SIGN_IDENTITY` and a notarytool keychain profile in `NOTARY_PROFILE`. The script builds a clean Git revision for Apple Silicon, signs and notarizes it, checks Gatekeeper, then places a ZIP, SHA-256 checksum and revision manifest in `dist`. It does not publish a release. Version 0.1.0 from `3206e99` passed signing, notarization, quarantined launch and replacement of an earlier development build on macOS 15.7.4. That package predates the printing fix. Remaining release gates are tracked in [TODO.md](TODO.md), including the Windows reference, remaining performance checks and physical keyboards.
 
 ## Contributing
 

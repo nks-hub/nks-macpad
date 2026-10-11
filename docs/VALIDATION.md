@@ -6,9 +6,11 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 Celá sada nad `1b8cf91` prošla 11. 10. 2026 v Release na macOS 15.7.4 / Apple Silicon: 143 testů (48 core, 95 AppKit), běh bez přerušení. Stejným postupem s `displayIfNeeded` mělo otevření 50 MiB krátkých ASCII řádků medián 746 ms a maximum 752 ms; vložení znaku 8/8 ms. Vložení znaku do 10 MiB českého textu mělo 24/24 ms. Dřívější měření níže zůstávají přiřazená ke svým revizím.
 
+macOS 14.8.9 (23J631), arm64, Xcode 16.2: revize `49d513c` prošla 143 testy v Release (48 core, 95 AppKit) v [GitHub Actions](https://github.com/nks-hub/nks-macpad/actions/runs/38153467337). Workflow ověřil verzi OS i architekturu a skončil úspěšně. Výsledek dokládá automatickou kompatibilitu nejnižší podporované řady macOS; nejde o opakování ruční přejímky VoiceOveru a fyzických klávesnic na macOS 14.
+
 ## Opravené nálezy
 
-Cmd+W nyní pracuje pouze s aktuálním oknem: v editoru zavře kartu, v pomocném okně použije nativní zavření. Příkaz odmítne modální dialog i sheet a sdílí původní ochrany ukládání a obnovy. Cmd+Shift+W používá nativní zavření okna. Prošlo 31 cílených testů editoru. V anglickém GUI se zapnutým VoiceOverem obě zkratky zavřely Nastavení, Cmd+W zavřelo také O aplikaci a ponechalo všech 20 karet. Zrušení zavření rozepsané karty zachovalo celý text; další Cmd+W za potvrzovacím dialogem nic nezavřelo. Zavření uložené karty snížilo počet na 19, znovuotevření jej vrátilo na 20 a soubor měl stejné bajty. VoiceOver byl nakonec vypnutý jako před zkouškou. Tím je uzavřená přejímka jazyka, kontrastu a ovládání bez myši na dostupném Macu; fyzické klávesnice a macOS 14 zůstávají samostatně neověřené.
+Cmd+W nyní pracuje pouze s aktuálním oknem: v editoru zavře kartu, v pomocném okně použije nativní zavření. Příkaz odmítne modální dialog i sheet a sdílí původní ochrany ukládání a obnovy. Cmd+Shift+W používá nativní zavření okna. Prošlo 31 cílených testů editoru. V anglickém GUI se zapnutým VoiceOverem obě zkratky zavřely Nastavení, Cmd+W zavřelo také O aplikaci a ponechalo všech 20 karet. Zrušení zavření rozepsané karty zachovalo celý text; další Cmd+W za potvrzovacím dialogem nic nezavřelo. Zavření uložené karty snížilo počet na 19, znovuotevření jej vrátilo na 20 a soubor měl stejné bajty. VoiceOver byl nakonec vypnutý jako před zkouškou. Tím je uzavřená přejímka jazyka, kontrastu a ovládání bez myši na dostupném Macu; fyzické klávesnice zůstávají samostatně neověřené. Automatické ověření macOS 14 je doložené výše.
 
 Kontrast 11. 10. 2026: původní drobné stavové popisky měly ve světlém motivu poměr 3,82 : 1; červená chybová zpráva 3,00 : 1 ve světlém a 3,76 : 1 v tmavém. Textové popisky, čísla řádků a názvy panelů nyní používají systémovou barvu textu. Chybová zpráva zachovává červený odstín s příměsí barvy textu podle vzhledu. Nový test ověřuje nejméně 4,5 : 1 pro všech pět stavových popisků i chybu obnovy ve světlém, tmavém a obou kontrastních vzhledech; nejde o měření každého pixelu rozhraní. Celá sada revize `5bdc76c` prošla: 141 testů (48 core, 93 AppKit). Hledání ve 20 kartách s 10 MiB mělo medián 341 ms a maximum 350 ms.
 
@@ -165,7 +167,7 @@ Nad zdroji revize `89800eb` prošlo v Release na stejném Macu 102 testů (40 co
 
 Pět opakování: hledání ve 20 kartách s celkem 10 MiB českého textu mělo medián 334 ms a maximum 335 ms včetně čekání 150 ms před hledáním, sestavení výsledků, rozvržení a `displayIfNeeded`. Rychlá poznámka měla 1/16 ms včetně `displayIfNeeded`; první vyvolání okno vytvořilo, další znovu zobrazila. Oba cíle (500 a 300 ms) jsou splněné pro tento postup; čas fyzického zobrazení snímku monitorem se neměřil. Jeden řádek se dvěma miliony znaků: otevření 482/485 ms, vložení znaku 2/3 ms. Toto měření nenahrazuje zbývající přejímku P14.
 
-Další testovací Mac není dostupný. macOS 14 a fyzické Mac/Windows klávesnice zůstávají neověřené.
+Další fyzický testovací Mac není dostupný. macOS 14 se následně ověřil automatickými testy v CI; fyzické Mac/Windows klávesnice zůstávají neověřené.
 
 GUI průchod stejné revize přes VNC: běžný editor široký 440 bodů, rychlá poznámka 480 bodů, písmo 24 bodů, 20 karet, světlý i tmavý motiv. Ověřeno psaní a undo, hledání přes Cmd+Shift+F, klik na výsledek za emoji (UTF-16 rozsah 50/6), skrytí výsledků přes Escape, přepínač karet s výběrem 20. karty, příkaz pro rychlou poznámku, její obsah a skrytí přes Escape s návratem fokusu. Cmd+Q ukončil oba testovací procesy. Po novém spuštění se zachovala aktivní karta, výběr a stejná rychlá poznámka bez duplikace; obsah a identita byly ověřené i v uložené relaci. Snímky zůstávají mimo Git. VNC zde mapuje Cmd na `super`; tento vstup nedokazuje fyzickou klávesnici ani VoiceOver.
 
@@ -189,7 +191,7 @@ Otevření zahrnuje načtení dokumentu a rozvržení viditelné části. Úprav
 - Vyřešit nesplněný cíl studeného startu a ověřit zrušení otevírání 50 MiB podle plánu; ostatní výkonová měření jsou doložená výše.
 - Upravený soubor se do relace ukládá celý i s uloženou verzí; velký upravený soubor proto relaci dál zvětšuje.
 - Prověřit ACL a rozšířené atributy souborů.
-- Otestovat macOS 14 a Intel před jejich označením za podporované; balíček arm64 prošel P15 na macOS 15.7.4.
+- Intel zůstává nepodporovaný. Automatické testy macOS 14 arm64 a přejímka balíčku na macOS 15.7.4 jsou doložené výše.
 
 ## Sdílený testovací Mac
 

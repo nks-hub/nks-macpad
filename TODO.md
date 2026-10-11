@@ -68,7 +68,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 - [x] Dokončit češtinu a angličtinu, VoiceOver, kontrast a ovládání bez myši.
 - [ ] Ověřit Home/End, výběr a modifikátory na fyzické Mac i Windows klávesnici.
 - [ ] Ověřit P12 až P14, dlouhé řádky, větší soubory a navržené výkonové cíle.
-- [ ] Otestovat nejnižší podporovaný macOS; Intel podporovat pouze po samostatném ověření.
+- [x] Otestovat nejnižší podporovaný macOS; macOS 14.8.9 arm64 prošel 143 testy v CI, Intel zůstává nepodporovaný.
 - [x] E02: doplnit připnutí a vlastní názvy konceptů se zachováním po restartu; ověřit P17.
 - [x] E03: přidat přepínač karet a vyhledání existujících příkazů menu; ověřit P18.
 - [x] E04: přidat hledání ve všech otevřených textech s kontrolou revizí a zrušením; ověřit P19.
