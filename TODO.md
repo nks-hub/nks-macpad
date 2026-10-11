@@ -55,16 +55,16 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 
 - [x] Doplnit hledání, nahrazování a nahradit vše jako vratnou změnu.
 - [x] Doplnit zkratky Cmd a vybrané Ctrl aliasy omezené na editor.
-- [ ] Doplnit zalamování, přiblížení a systémový, světlý i tmavý vzhled.
-- [ ] Projít souvislou práci s poznámkami včetně ukončení a obnovy, P01 až P11.
+- [x] Doplnit zalamování, přiblížení a systémový, světlý i tmavý vzhled.
+- [x] Projít souvislou práci s poznámkami včetně ukončení a obnovy, P01 až P11.
 - [x] Změřit první výkonové výsledky release buildu pro 1/10/50 MiB a odstranit nalezené zpomalení editoru.
 
 ## E. Rozšířená verze 1.0
 
 - [x] Doplnit pořadí karet, přesun mezi okny a obnovu více oken.
 - [ ] Doplnit nedávné soubory, přetažení a tisk.
-- [ ] Doplnit přechod na řádek, volitelná čísla řádků, písmo a stavový řádek včetně výběru nad Unicode.
-- [ ] Doplnit Windows-1250, explicitní převody a rozhodnutí pro smíšené konce řádků.
+- [x] Doplnit přechod na řádek, volitelná čísla řádků, písmo a stavový řádek včetně výběru nad Unicode.
+- [x] Doplnit Windows-1250, explicitní převody a rozhodnutí pro smíšené konce řádků.
 - [ ] Dokončit češtinu a angličtinu, VoiceOver, kontrast a ovládání bez myši.
 - [ ] Ověřit Home/End, výběr a modifikátory na fyzické Mac i Windows klávesnici.
 - [ ] Ověřit P12 až P14, dlouhé řádky, větší soubory a navržené výkonové cíle.
