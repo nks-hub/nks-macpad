@@ -30,7 +30,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 - [x] Vytvořit AppKit projekt, opakovatelný build a XCTest targety.
 - [x] Ověřit dvě karty, NSDocument, NSTextView, oddělené undo a bezpečné explicitní ukládání na původním rozhraní.
 - [x] Zvolit vlastní SessionStore a ověřit ukončení bez přepsání zdrojového souboru.
-- [ ] Ověřit horní lištu, registraci a kolize globální zkratky a návrat fokusu rychlé poznámky.
+- [x] Ověřit horní lištu, registraci a kolize globální zkratky a návrat fokusu rychlé poznámky.
 
 ## B. Editor a soubory
 
@@ -76,7 +76,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 - [x] E06: přidat Uložit vše s pravdivým výsledkem po zrušení nebo částečném selhání; ověřit P21.
 - [x] E07: přidat datum a čas, duplikaci, přesun a úpravy označených řádků s jedním undo; ověřit P22.
 - [ ] E08: přidat režim soustředění a dočasné okno navrchu s dostupným vypnutím; ověřit P23.
-- [ ] E01: přidat rychlou poznámku ze systémové lišty a zkratky nad stejným dokumentovým stavem; ověřit P16.
+- [x] E01: přidat rychlou poznámku ze systémové lišty a zkratky nad stejným dokumentovým stavem; ověřit P16.
 - [x] Ověřit běžné psaní, 20 karet, výsledky hledání a rychlou poznámku v malé šířce, obou motivech a s velkým písmem (440/480 bodů, písmo 24 bodů, revize `89800eb`).
 - [x] Změřit odezvu rychlé poznámky a hledání napříč kartami podle doplněných výkonových cílů: 1/16 ms a 334/335 ms (medián/maximum, pět opakování).
 
