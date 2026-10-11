@@ -97,6 +97,7 @@ extension AppDelegate {
         view.addItem(.separator())
         add(view, L("Zalamovat řádky", "Word wrap"), #selector(EditorWindowController.toggleWrap(_:)))
         add(view, L("Čísla řádků", "Line numbers"), #selector(EditorWindowController.toggleLineNumbers(_:)))
+        add(view, L("Náhled Markdownu", "Markdown preview"), #selector(EditorWindowController.toggleMarkdownPreview(_:)))
         add(view, L("Přiblížit", "Zoom in"), #selector(EditorWindowController.zoomIn(_:)), "+")
         add(view, L("Oddálit", "Zoom out"), #selector(EditorWindowController.zoomOut(_:)), "-")
         add(view, L("Skutečná velikost", "Actual size"), #selector(EditorWindowController.zoomReset(_:)), "0")
@@ -136,6 +137,7 @@ extension EditorWindowController: NSMenuItemValidation {
         switch menuItem.action {
         case #selector(toggleWrap(_:)): menuItem.state = Preferences.wrap ? .on : .off
         case #selector(toggleLineNumbers(_:)): menuItem.state = UserDefaults.standard.bool(forKey: "lineNumbers") ? .on : .off
+        case #selector(toggleMarkdownPreview(_:)): menuItem.state = markdownPreview != nil ? .on : .off
         case #selector(toggleFocus(_:)): menuItem.state = focusMode ? .on : .off
         case #selector(toggleOnTop(_:)): menuItem.state = window?.level == .floating ? .on : .off
         case #selector(togglePin(_:)): menuItem.state = noteFor(menuItem)?.pinned == true ? .on : .off

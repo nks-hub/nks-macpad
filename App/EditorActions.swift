@@ -209,6 +209,7 @@ extension EditorWindowController {
     func changeSize(by amount: CGFloat) {
         Preferences.fontSize += amount
         app.editors.forEach { editor in editor.textViews.values.forEach { editor.configure($0) }; editor.updateStatus() }
+        app.editors.forEach { editor in if let note = editor.active { editor.markdownPreview?.update(note, delay: 0) } }
     }
     @objc func chooseFont(_ sender: Any?) {
         NSFontManager.shared.setSelectedFont(Preferences.font, isMultiple: false)
@@ -239,7 +240,8 @@ extension EditorWindowController {
             window?.makeFirstResponder(textView)
         } else if textView?.enclosingScrollView?.isFindBarVisible == true {
             performFind(.hideFindInterface)
-        } else if focusMode { toggleFocus(nil) }
+        } else if markdownPreview != nil { toggleMarkdownPreview(nil) }
+        else if focusMode { toggleFocus(nil) }
         else if quick { window?.performClose(nil) }
     }
 

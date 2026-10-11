@@ -26,13 +26,14 @@
 - 🕘 **Saved version history** - Optional previous file versions, restored as new drafts; limited to 20 per file, 30 days and 100 MiB in total
 - 💾 **Draft recovery** - Restores drafts, tab order, selection and scroll position after relaunch; recovery copies never touch the original file
 - 🔍 **Search** - Find and replace in the current document, search across all open tabs and jump straight to a match
+- 📝 **Markdown preview** - Read-only headings, lists, tasks and inline formatting beside the source, using the macOS Foundation parser
 - ⌨️ **Keyboard navigation** - Tab switcher, command palette, macOS shortcuts and selected Windows-style Ctrl shortcuts
 - ✂️ **Line operations** - Insert date/time, duplicate, move, sort and remove exact duplicates; all undoable
 - 🎨 **Workspace** - Light, dark and system appearance, font, zoom, word wrap, line numbers, focus mode and always-on-top
 - ⚡ **Quick note** - Compact window, optional menu bar item and configurable global shortcut; works only while MacPad is running
 - 🌐 **Localization** - English and Czech UI
 
-Markdown preview and split view are planned for 1.1 and are not part of the app yet.
+Split editing is planned for 1.1 and is not part of the app yet.
 
 ## Requirements
 
@@ -79,6 +80,7 @@ Ctrl aliases work inside the editor and do not override the system keyboard. The
 - **File → Compare with file on disk** shows both versions, line numbers, changed lines, encoding and line endings. A stale comparison must be refreshed before reloading or overwriting. Save a copy remains available; there is no automatic merge.
 - Drafts live in `~/Library/Application Support/MacPad`. They are not encrypted. Recovery can be turned off in Settings; discarding a draft removes it from both recovery copies.
 - Saved version history is off by default. Enable it in **Settings → History** and open it from **File → Saved version history**. It stores previous file bytes in the local `History` subfolder without encryption. Limits are applied at launch, when saving and when opening history. Delete one file's history from the File menu or all history from Settings; turning recording off keeps existing versions. Discarded unsaved edits are never archived.
+- **View → Markdown preview** leaves the source unchanged. HTML is shown as text and images as labels; neither loads resources. Only HTTP/HTTPS links are clickable, and they open the system browser after a click. The preview uses Foundation and AppKit without a web view or an additional parser dependency.
 - No account, no cloud sync, no telemetry. Saving into a synced folder works, but concurrent edits can still conflict.
 
 ## Testing
@@ -88,7 +90,7 @@ bash scripts/build.sh test
 CONFIGURATION=Release bash scripts/build.sh test
 ```
 
-120 automated tests pass on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 72 for AppKit, lifecycle and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 737 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Details are in [docs/VALIDATION.md](docs/VALIDATION.md).
+123 automated tests pass on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 75 for AppKit, lifecycle, Markdown and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 741 ms (median) and inserting a character at the end 7 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Details are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 

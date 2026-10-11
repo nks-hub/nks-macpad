@@ -25,6 +25,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     var allowClose = false
     var panel: CommandPanel?
     var comparisonWindow: FileComparisonWindow?
+    var markdownPreview: MarkdownPreview?
     var searchWork: BlockOperation?
     var searchGeneration = 0
     var busyClosing = false
@@ -337,13 +338,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
             scroll.backgroundColor = NotepadColors.canvas
             scroll.documentView = view
             scroll.translatesAutoresizingMaskIntoConstraints = false
-            body.addSubview(scroll)
-            NSLayoutConstraint.activate([
-                scroll.leadingAnchor.constraint(equalTo: body.leadingAnchor),
-                scroll.trailingAnchor.constraint(equalTo: body.trailingAnchor),
-                scroll.topAnchor.constraint(equalTo: body.topAnchor),
-                scroll.bottomAnchor.constraint(equalTo: body.bottomAnchor)
-            ])
+            installEditorScroll(scroll)
             configure(view)
             window?.contentView?.layoutSubtreeIfNeeded()
             if let container = view.textContainer {
@@ -372,7 +367,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         view.isHorizontallyResizable = !Preferences.wrap
         view.enclosingScrollView?.hasHorizontalScroller = !Preferences.wrap
         view.textContainer?.widthTracksTextView = Preferences.wrap
-        view.textContainer?.containerSize = NSSize(width: Preferences.wrap ? max(body.bounds.width, 400) : .greatestFiniteMagnitude,
+        view.textContainer?.containerSize = NSSize(width: Preferences.wrap ? max(view.enclosingScrollView?.contentSize.width ?? body.bounds.width, 1) : .greatestFiniteMagnitude,
                                                    height: .greatestFiniteMagnitude)
     }
 
@@ -538,6 +533,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         view.enclosingScrollView?.verticalRulerView?.needsDisplay = true
         app.changed()
         app.refreshSearchResults()
+        if note.id == activeID { markdownPreview?.update(note) }
     }
 
     /// Index into lineStarts of the line containing a UTF-16 location.
