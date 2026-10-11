@@ -143,6 +143,8 @@ extension EditorWindowController {
         let generation = searchGeneration
         let query = findAll.stringValue
         results.arrangedSubviews.forEach { results.removeArrangedSubview($0); $0.removeFromSuperview() }
+        window?.contentView?.layoutSubtreeIfNeeded()
+        window?.recalculateKeyViewLoop()
         guard !query.isEmpty else { return }
         let documents = app.editors.flatMap { editor in editor.notes.map { ($0.id, $0.revision, $0.title, $0.text) } }
         let work = BlockOperation()
@@ -188,6 +190,8 @@ extension EditorWindowController {
                     ? L("Prvních 200 výsledků. Upřesněte hledání.", "First 200 results. Refine your search.")
                     : "\(matches.count) " + L("výsledků", "results"))
                 self.results.addArrangedSubview(label)
+                self.window?.contentView?.layoutSubtreeIfNeeded()
+                self.window?.recalculateKeyViewLoop()
             }
         }
         searchWork = work

@@ -341,6 +341,35 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testSearchResultsJoinKeyboardNavigationAfterLoading() async throws {
+        let editor = makeEditor(text: "find this result")
+        defer { finish() }
+        editor.showWindow(nil)
+        editor.showSearchAll(nil)
+        let fieldEditor = try XCTUnwrap(editor.findAll.currentEditor())
+        var previous: ResultButton?
+        for query in ["result", "find", ""] {
+            editor.findAll.stringValue = query
+            editor.searchAllChanged(nil)
+            if !query.isEmpty { await waitForResults(editor, count: 1) }
+            let result = editor.results.arrangedSubviews.first as? ResultButton
+            var visited = Set<ObjectIdentifier>()
+            var next: NSView? = editor.findAll
+            while let view = next, visited.insert(ObjectIdentifier(view)).inserted {
+                next = view.nextKeyView
+            }
+            if query.isEmpty {
+                XCTAssertNil(result)
+            } else {
+                XCTAssertTrue(visited.contains(ObjectIdentifier(try XCTUnwrap(result))), "Tab navigation must reach the loaded result")
+            }
+            if let previous { XCTAssertFalse(visited.contains(ObjectIdentifier(previous)), "Old results must leave the key loop") }
+            XCTAssertTrue(editor.window?.firstResponder === fieldEditor)
+            previous = result
+        }
+    }
+
+    @MainActor
     func testSearchUpdatesWhenPopulatedWindowOpensAndCloses() async throws {
         let oldRestore = UserDefaults.standard.object(forKey: "restore")
         Preferences.restore = false
