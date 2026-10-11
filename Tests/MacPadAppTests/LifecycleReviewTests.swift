@@ -4,6 +4,50 @@ import MacPadCore
 
 final class LifecycleReviewTests: XCTestCase {
     @MainActor
+    func testClosedFileLimitAndReopeningPreserveIdentityAndCursor() async throws {
+        _ = NSApplication.shared
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let app = AppDelegate(sessionDirectory: directory.appendingPathComponent("session"))
+        let editor = app.makeWindow()
+        defer { editor.window?.orderOut(nil) }
+        var files: [URL] = []
+        for index in 0..<22 {
+            let url = directory.appendingPathComponent("note-\(index).txt")
+            try Data("A😀BCD".utf8).write(to: url)
+            files.append(url)
+            let note = TextDocument()
+            try note.load(url)
+            editor.addNote(note, replacingEmpty: true)
+            editor.textView?.setSelectedRange(NSRange(location: 1, length: 2))
+            editor.closeNote(nil)
+            let closed = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in !editor.busyClosing }, object: nil)
+            await fulfillment(of: [closed], timeout: 3)
+        }
+        XCTAssertEqual(app.closedFiles.map(\.0), Array(files.suffix(20)))
+        app.reopenClosed(nil)
+        let reopened = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in app.pendingOpenCount == 0 }, object: nil)
+        await fulfillment(of: [reopened], timeout: 3)
+        let note = try XCTUnwrap(editor.active)
+        XCTAssertEqual(note.fileURL?.lastPathComponent, files.last?.lastPathComponent)
+        XCTAssertEqual(editor.textView?.selectedRange(), NSRange(location: 1, length: 2))
+        editor.textView?.insertText("edited", replacementRange: NSRange(location: 0, length: 0))
+        let editedText = note.text
+        app.closedFiles.append((try XCTUnwrap(files.last), NSRange(location: 0, length: 0)))
+        app.reopenClosed(nil)
+        let selected = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in app.pendingOpenCount == 0 }, object: nil)
+        await fulfillment(of: [selected], timeout: 3)
+        XCTAssertTrue(editor.active === note)
+        XCTAssertEqual(editor.notes.count, 1)
+        XCTAssertEqual(note.text, editedText)
+        XCTAssertEqual(try String(contentsOf: XCTUnwrap(files.last), encoding: .utf8), "A😀BCD")
+        app.clearRecent(nil)
+        XCTAssertTrue(app.closedFiles.isEmpty)
+        XCTAssertTrue(NSDocumentController.shared.recentDocumentURLs.isEmpty)
+    }
+
+    @MainActor
     func testClosingInactiveTabPersistsRemovalBehindOlderSnapshot() async throws {
         _ = NSApplication.shared
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

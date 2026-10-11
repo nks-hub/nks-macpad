@@ -72,7 +72,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 - [x] E02: doplnit připnutí a vlastní názvy konceptů se zachováním po restartu; ověřit P17.
 - [x] E03: přidat přepínač karet a vyhledání existujících příkazů menu; ověřit P18.
 - [x] E04: přidat hledání ve všech otevřených textech s kontrolou revizí a zrušením; ověřit P19.
-- [ ] E05: přidat znovuotevření zavřeného souboru bez archivace zahozených změn a mazání seznamů; ověřit P20.
+- [x] E05: přidat znovuotevření zavřeného souboru bez archivace zahozených změn a mazání seznamů; ověřit P20.
 - [x] E06: přidat Uložit vše s pravdivým výsledkem po zrušení nebo částečném selhání; ověřit P21.
 - [x] E07: přidat datum a čas, duplikaci, přesun a úpravy označených řádků s jedním undo; ověřit P22.
 - [ ] E08: přidat režim soustředění a dočasné okno navrchu s dostupným vypnutím; ověřit P23.

@@ -41,6 +41,8 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 ## Provedené kontroly
 
+- E05/P20: devět cílených LifecycleReviewTests prošlo v Release. Nový test zavřel 22 skutečných souborů a ověřil přesné pořadí posledních 20 odkazů, obnovu výběru celého emoji, jedinečnost již otevřeného dokumentu a zachování jeho neuložené změny i diskového originálu. Vymazání odstranilo oba seznamy. GUI doplnilo kurzor na pozici 3 po znovuotevření, zahození neuložených úprav bez jejich návratu, chybu po smazání souboru a zahozený koncept, který se nevrátil přes Cmd+Shift+T. Vymazání přes příkazy UI nechalo prázdný panel nedávných souborů; dvě zbývající uložené karty zůstaly celé.
+
 - GUI E06/P21: dávka změněný soubor → nový koncept → další změněný soubor se po zrušení prostředního ukládacího dialogu zastavila s údajem 1/3. První soubor měl nové bajty, poslední staré a obě zbývající změny byly dostupné. Druhý průchod s neměnným prostředním souborem ohlásil skutečnou chybu oprávnění a opět 1/3; kontrola souborů a relace potvrdila uložený první a změněné zbývající dva. Po odstranění testovacího příznaku další Uložit vše uložilo oba přesně a všechny karty byly čisté. Editaci během jednotlivého zápisu a ochranu zavírání v dávce dokládají dosavadní automatické testy. Příkaz se vyvolával přes panel příkazů; VNC kombinace Cmd+Alt+S v tomto prostředí spustila jen Uložit, takže nedokládá funkčnost fyzické zkratky Option+Cmd+S.
 
 - GUI E02/P17: koncept dostal vlastní název a připnutí přes příkazy UI, přesunul se do druhého okna a přežil ukončení i nový proces se stejným ID, obsahem, názvem a připnutím. Uložit nabídlo vlastní název s `.txt` a uložilo přesný obsah. U uloženého souboru příkaz pojmenování nebyl dostupný a jeho název ani bajty se nezměnily.
