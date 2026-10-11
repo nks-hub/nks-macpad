@@ -89,6 +89,32 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 ## Měření výkonu
 
+### Start procesu a vykreslení 11. 10. 2026
+
+Celá sada nad `92cb167` prošla: 134 testů (48 core + 86 AppKit). Poté prošlo devět cílených výkonových testů revize `1cb6037`, včetně dvou nových testů velkého vložení. Pět opakování každého scénáře na stejném Apple M1 Pro / macOS 15.7.4:
+
+| Scénář | Medián / maximum |
+| --- | --- |
+| Otevření 1 MiB ASCII | 29 / 31 ms |
+| Otevření 10 MiB ASCII | 157 / 160 ms |
+| Otevření 50 MiB ASCII | 717 / 781 ms |
+| Otevření 10 MiB českého textu | 247 / 267 ms |
+| Vložení 1 MiB českého textu | 82 / 85 ms |
+| Vložení 10 MiB českého textu | 706 / 725 ms |
+| Otevření řádku se dvěma miliony znaků | 533 / 540 ms |
+
+Tyto časy zahrnují bezprostřední `displayIfNeeded`, nikoli doručení snímku monitorem ani odložený výpočet počtu znaků. Vložení zachovalo celý text a jedno undo jej odstranilo. Jednoznaková úprava 10 MiB českého textu měla 23/23 ms; 50 MiB ASCII 8/19 ms.
+
+Další samostatné měření používalo stejný aplikační kód v izolované kopii s jiným bundle ID, podpisem a testovacím pozorovatelem. Čas se počítal od přímého spuštění procesu do viditelného aktivního okna s editovatelným `EditorTextView`, po rozložení a `displayIfNeeded`. Zahrnuje zápis a zjištění kontrolního souboru s rozlišením přibližně 2 ms. Každý běh skončil řádně přes ukončení aplikace.
+
+| Nový proces, pět běhů | Start medián / maximum | RSS 1,5 s po připravenosti medián / maximum |
+| --- | --- | --- |
+| Prázdná relace | 220 / 259 ms | 83,7 / 84,3 MiB |
+| Obnova 20 karet s 10 MiB českého textu | 461 / 477 ms | 129,0 / 129,8 MiB |
+
+Po všech pěti obnovách obsahovala nově uložená relace přesně 20 poznámek se správným celým textem. RSS je jednotlivý odběr, nikoli maximum během startu nebo dlouhodobá spotřeba. Cache systému se nečistila; měření neprokazuje start se studenou cache, spuštění přes LaunchServices ani distribuční balíček. První prázdný proces měl 257 ms, následující 202–259 ms. VNC nebylo časomírou.
+
+
 ### Doplnění 11. 10. 2026
 
 Nad zdroji revize `89800eb` prošlo v Release na stejném Macu 102 testů (40 core, 62 AppKit). Běh přes RemoteCmd skončil bez přerušení. Nové testy ověřují UTF-16 pozice hledání za emoji a odmítnutí starého výsledku po editaci, zrušení čekajícího i již běžícího hledání, kolizi a uvolnění globální zkratky, dokončení snímku před skrytím rychlé poznámky a opětovné otevření stejného konceptu. Kolize používá skutečné Carbon API; nejde o zkoušku fyzických kláves.

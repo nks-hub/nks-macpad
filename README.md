@@ -93,7 +93,7 @@ bash scripts/build.sh test
 CONFIGURATION=Release bash scripts/build.sh test
 ```
 
-132 automated tests pass on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 84 for AppKit, lifecycle, split editing, Markdown and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 718 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Details are in [docs/VALIDATION.md](docs/VALIDATION.md).
+134 automated tests pass on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 86 for AppKit, lifecycle, split editing, Markdown and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 717 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Two additional large-insertion tests passed in the focused performance suite. Details and measurement limits are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 
