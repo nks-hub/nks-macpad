@@ -27,6 +27,7 @@ final class TextDocument: NSDocument {
     var revision: UInt64 = 0
     var saving = false
     var externalChange = false
+    var historyFailure: String?
 
     init(id: UUID = UUID()) {
         self.id = id

@@ -21,6 +21,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var pendingOpenCount = 0
     var deferredOpenResults: [() -> Void] = []
     let sessionStore: SessionStore
+    let historyStore: VersionHistoryStore
+    var historyGeneration = 0
     var sessionRevision: UInt64 = 0
     var sessionPending = false {
         didSet { if sessionPending { sessionRevision &+= 1 } }
@@ -55,6 +57,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("MacPad", isDirectory: true)
         sessionStore = SessionStore(directory: directory)
+        historyStore = VersionHistoryStore(directory: directory.appendingPathComponent("History", isDirectory: true))
         super.init()
     }
 
@@ -73,6 +76,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         installMenus()
         Preferences.applyAppearance()
+        diskQueue.async {
+            do { try self.historyStore.pruneExpired() }
+            catch {
+                DispatchQueue.main.async {
+                    self.showError(L("Údržba historie selhala: ", "History maintenance failed: ") + errorMessage(error))
+                }
+            }
+        }
         do {
             if Preferences.restore, let session = try sessionStore.load() {
                 for snapshot in session.windows {
@@ -321,10 +332,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let text = note.text
         let format = note.format
         let stamp = expected
+        let historyEnabled = Preferences.history
+        let previousEncoding = note.fileURL == url && note.stamp == stamp ? note.savedFormat?.encoding : nil
         note.saving = true
         diskQueue.async {
             do {
-                let result = try TextFileStore.write(text, format: format, to: url, expected: stamp)
+                var historyFailure: String?
+                let archive: ((Result<Data, Error>) -> Void)? = historyEnabled ? { previous in
+                    do { try self.historyStore.record(previous.get(), source: url, encoding: previousEncoding) }
+                    catch { historyFailure = errorMessage(error) }
+                } : nil
+                let result = try TextFileStore.write(text, format: format, to: url, expected: stamp, preservePrevious: archive)
                 DispatchQueue.main.async {
                     note.saving = false
                     note.fileURL = url
@@ -332,9 +350,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     note.externalChange = false
                     note.savedText = text
                     note.savedFormat = format
+                    note.historyFailure = historyFailure
                     if !note.isDocumentEdited { note.updateChangeCount(.changeCleared) }
                     NSDocumentController.shared.noteNewRecentDocumentURL(url)
                     self.changed()
+                    if let historyFailure {
+                        self.showError(L("Soubor byl uložen. Archivace předchozí verze selhala:\n", "The file was saved. Archiving the previous version failed:\n") + historyFailure)
+                    }
                     completion(true)
                 }
             } catch {

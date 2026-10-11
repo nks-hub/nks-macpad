@@ -2,6 +2,13 @@ import Foundation
 import MacPadCore
 
 func errorMessage(_ error: Error) -> String {
+    if let error = error as? VersionHistoryError {
+        switch error {
+        case .invalidEntry: return L("Historie obsahuje neplatná data.", "Version history contains invalid data.")
+        case .unsupportedVersion: return L("Historie pochází z novější verze aplikace.", "Version history comes from a newer app version.")
+        case .tooLarge: return L("Předchozí verze překračuje limit historie 100 MiB.", "The previous version exceeds the 100 MiB history limit.")
+        }
+    }
     if let error = error as? TextFileStoreError {
         switch error {
         case .conflict:

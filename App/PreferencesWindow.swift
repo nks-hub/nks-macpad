@@ -4,7 +4,7 @@ import MacPadCore
 final class PreferencesWindow: NSWindowController {
     unowned let app: AppDelegate
     let restore = NSButton(checkboxWithTitle: L("Obnovovat rozepsané poznámky", "Restore drafts on launch"), target: nil, action: nil)
-    let sections = NSSegmentedControl(labels: [L("Editor", "Editor"), L("Vzhled", "Appearance"), L("Obnova a zkratky", "Recovery and shortcuts")],
+    let sections = NSSegmentedControl(labels: [L("Editor", "Editor"), L("Vzhled", "Appearance"), L("Obnova a zkratky", "Recovery and shortcuts"), L("Historie", "History")],
                                      trackingMode: .selectOne, target: nil, action: nil)
     let pages = NSStackView()
     let fontLabel = NSTextField(labelWithString: "")
@@ -46,6 +46,7 @@ final class PreferencesWindow: NSWindowController {
         buildEditorPage()
         buildAppearancePage()
         buildRecoveryPage()
+        buildHistoryPage()
         changeSection(sections)
     }
 
@@ -151,6 +152,21 @@ final class PreferencesWindow: NSWindowController {
         clear.bezelStyle = .rounded
         addRow(row(L("Globální zkratka", "Global shortcut"), control: NSStackView(views: [recorder, clear])), to: page)
     }
+
+    private func buildHistoryPage() {
+        let page = page()
+        let enabled = NSButton(checkboxWithTitle: L("Uchovávat předchozí uložené verze souborů", "Keep previous saved file versions"), target: self, action: #selector(changeHistory(_:)))
+        enabled.state = Preferences.history ? .on : .off
+        page.addArrangedSubview(enabled)
+        let detail = NSTextField(wrappingLabelWithString: L("Nejvýše 20 verzí na soubor, 30 dní a celkem 100 MiB. Historie je uložená místně bez šifrování. Vypnutí další archivace nemaže existující historii. Obnovení vytvoří nový koncept; nepřepíše soubor ani rozepsané změny.", "Up to 20 versions per file, 30 days and 100 MiB in total. History is stored locally without encryption. Turning it off keeps existing history. Restoring creates a new draft; it does not overwrite files or unsaved edits."))
+        detail.textColor = .secondaryLabelColor
+        addRow(detail, to: page)
+        let clear = NSButton(title: L("Vymazat všechnu historii…", "Delete all history…"), target: app, action: #selector(AppDelegate.clearAllHistory(_:)))
+        clear.bezelStyle = .rounded
+        page.addArrangedSubview(clear)
+    }
+
+    @objc func changeHistory(_ sender: NSButton) { Preferences.history = sender.state == .on }
 
     @objc func changeSection(_ sender: NSSegmentedControl) {
         for (index, page) in pages.arrangedSubviews.enumerated() { page.isHidden = index != sender.selectedSegment }

@@ -5,6 +5,10 @@ func L(_ cs: String, _ en: String) -> String {
 }
 
 enum Preferences {
+    static var history: Bool {
+        get { UserDefaults.standard.bool(forKey: "versionHistory") }
+        set { UserDefaults.standard.set(newValue, forKey: "versionHistory") }
+    }
     static var interfaceLanguage: String {
         let language = UserDefaults.standard.string(forKey: "language") ?? Locale.preferredLanguages.first ?? "en"
         return language.hasPrefix("cs") ? "cs" : "en"

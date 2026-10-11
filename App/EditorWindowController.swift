@@ -427,7 +427,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
 
     func updateStatus() {
         guard let note = active else { status.stringValue = ""; return }
-        statusBar.hasWarning = app.sessionFailure != nil || note.externalChange
+        statusBar.hasWarning = app.sessionFailure != nil || note.externalChange || note.historyFailure != nil
         if let failure = app.sessionFailure {
             status.stringValue = L("Koncept není bezpečně zachován: ", "Draft recovery failed: ") + failure
             status.textColor = .systemRed
@@ -436,6 +436,12 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         if app.pendingOpenCount > 0 {
             status.stringValue = L("Otevírání souborů…", "Opening files…")
             status.toolTip = L("Zrušit: ⌘. nebo nabídka Soubor", "Cancel: ⌘. or the File menu")
+            return
+        }
+        if let failure = note.historyFailure {
+            status.stringValue = L("Soubor uložen, archivace historie selhala. ", "File saved, version history failed. ") + failure
+            status.toolTip = status.stringValue
+            status.textColor = .systemRed
             return
         }
         status.textColor = .secondaryLabelColor

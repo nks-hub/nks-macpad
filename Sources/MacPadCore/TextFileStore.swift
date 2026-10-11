@@ -47,14 +47,16 @@ public enum TextFileStore {
     }
 
     public static func write(_ text: String, format: TextFormat, to url: URL,
-                             expected: FileStamp) throws -> FileStamp {
-        try write(text, format: format, to: url, expected: expected, beforeReplace: {})
+                             expected: FileStamp, preservePrevious: ((Result<Data, Error>) -> Void)? = nil) throws -> FileStamp {
+        try write(text, format: format, to: url, expected: expected, preservePrevious: preservePrevious, beforeReplace: {})
     }
 
     static func write(_ text: String, format: TextFormat, to url: URL, expected: FileStamp,
+                      preservePrevious: ((Result<Data, Error>) -> Void)? = nil,
                       beforeReplace: @escaping () throws -> Void) throws -> FileStamp {
         let data = try TextFileCodec.encode(text, format: format)
-        return try coordinate(url, writing: true) { target in
+        var previous: Result<Data, Error>?
+        let result = try coordinate(url, writing: true) { target in
             let actual = try currentStamp(target)
             guard actual == expected else { throw TextFileStoreError.conflict(expected: expected, actual: actual) }
             if actual != .missing, !FileManager.default.isWritableFile(atPath: target.path) {
@@ -79,10 +81,16 @@ public enum TextFileStore {
                 guard try currentStamp(backup) == expected else {
                     throw TextFileStoreError.conflictRecovered(backup, written: digest(data))
                 }
+                if preservePrevious != nil {
+                    previous = Result { try Data(contentsOf: backup) }
+                    if case .success(let old)? = previous, old == data { previous = nil }
+                }
                 try manager.removeItem(at: backup)
             }
             return digest(data)
         }
+        if let previous { preservePrevious?(previous) }
+        return result
     }
 
     private static func digest(_ data: Data) -> FileStamp {
