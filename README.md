@@ -90,6 +90,8 @@ CONFIGURATION=Release bash scripts/build.sh test
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 
+`bash scripts/release.sh --help` describes release packaging. It requires a Developer ID Application identity in `SIGN_IDENTITY` and a notarytool keychain profile in `NOTARY_PROFILE`. The script builds a clean Git revision for Apple Silicon, signs and notarizes it, checks Gatekeeper, then places a ZIP, SHA-256 checksum and revision manifest in `dist`. It does not publish a release. The distribution acceptance checks remain open in [TODO.md](TODO.md).
+
 ## Contributing
 
 Contributions are welcome! For major changes, please open an issue first.
