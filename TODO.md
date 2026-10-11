@@ -2,7 +2,7 @@
 
 Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritéria jsou v [plánu](PLAN.md).
 
-Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. Nad zdroji revize `f594ac1` prošlo 129 automatických testů na Macu a následná cílená kontrola posunu panelů. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
+Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. Nad zdroji s výběrem kódování prošlo 132 automatických testů na Macu; revize `336e769` má navíc cílenou kontrolu viditelného náhledu a GUI průchod souborových formátů. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
 
 ## Před pokračováním v ověřování
 
@@ -36,7 +36,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 
 - [x] Implementovat čistý text, schránku, výběr, undo/redo a vypnutí automatických náhrad textu.
 - [x] Implementovat karty, fokus, názvy, označení změn a příkazy menu.
-- [ ] Implementovat otevření více souborů, Finder a rozpoznání opakovaného otevření stejné identity.
+- [x] Implementovat otevření více souborů, Finder a rozpoznání opakovaného otevření stejné identity.
 - [ ] Implementovat Uložit a Uložit jako včetně zrušení, přepsání cíle a chyby oprávnění.
 - [x] Implementovat striktní UTF-8, BOM, UTF-16 a zachování LF/CRLF s bajtovými testy.
 - [x] Zajistit atomický zápis, kontrolu revize a ochranu před externí změnou při ukládání.
@@ -53,7 +53,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 
 ## D. První použitelná verze
 
-- [ ] Doplnit hledání, nahrazování a nahradit vše jako vratnou změnu.
+- [x] Doplnit hledání, nahrazování a nahradit vše jako vratnou změnu.
 - [x] Doplnit zkratky Cmd a vybrané Ctrl aliasy omezené na editor.
 - [ ] Doplnit zalamování, přiblížení a systémový, světlý i tmavý vzhled.
 - [ ] Projít souvislou práci s poznámkami včetně ukončení a obnovy, P01 až P11.
