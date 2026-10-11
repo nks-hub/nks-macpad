@@ -40,6 +40,7 @@ extension AppDelegate {
         add(file, L("Uložit", "Save"), #selector(EditorWindowController.saveNote(_:)), "s")
         add(file, L("Uložit jako…", "Save as…"), #selector(EditorWindowController.saveAs(_:)), "s", [.command, .shift])
         add(file, L("Uložit vše", "Save all"), #selector(saveAll(_:)), "s", [.command, .option], target: self)
+        add(file, L("Porovnat se souborem na disku…", "Compare with file on disk…"), #selector(EditorWindowController.compareWithDisk(_:)))
         add(file, L("Zavřít kartu", "Close tab"), #selector(EditorWindowController.closeNote(_:)), "w")
         add(file, L("Zavřít okno", "Close window"), #selector(EditorWindowController.closeWindow(_:)), "w", [.command, .shift])
         file.addItem(.separator())
@@ -137,6 +138,7 @@ extension EditorWindowController: NSMenuItemValidation {
         case #selector(toggleOnTop(_:)): menuItem.state = window?.level == .floating ? .on : .off
         case #selector(togglePin(_:)): menuItem.state = noteFor(menuItem)?.pinned == true ? .on : .off
         case #selector(renameNote(_:)): return noteFor(menuItem)?.fileURL == nil && noteFor(menuItem) != nil
+        case #selector(compareWithDisk(_:)): return active?.fileURL != nil && active?.saving == false
         case #selector(sortLines(_:)), #selector(uniqueLines(_:)): return (textView?.selectedRange().length ?? 0) > 0
         case #selector(saveNote(_:)), #selector(saveAs(_:)), #selector(closeNote(_:)): return active != nil && active?.saving == false && !busyClosing
         case #selector(setEncoding(_:)): menuItem.state = active?.format.encoding.rawValue == menuItem.representedObject as? String ? .on : .off

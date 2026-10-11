@@ -24,6 +24,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     var focusMode = false
     var allowClose = false
     var panel: CommandPanel?
+    var comparisonWindow: FileComparisonWindow?
     var searchWork: BlockOperation?
     var searchGeneration = 0
     var busyClosing = false

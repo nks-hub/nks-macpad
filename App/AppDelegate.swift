@@ -280,10 +280,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         waiters.forEach { $0(succeeded) }
     }
 
-    func save(_ note: TextDocument, as saveAs: Bool = false, completion: @escaping (Bool) -> Void) {
+    func save(_ note: TextDocument, as saveAs: Bool = false, expectedStamp: FileStamp? = nil, completion: @escaping (Bool) -> Void) {
         guard !note.saving else { completion(false); return }
         var target = note.fileURL
-        var expected = note.stamp ?? .missing
+        var expected = expectedStamp ?? note.stamp ?? .missing
         if target == nil || saveAs {
             let panel = NSSavePanel()
             panel.canCreateDirectories = true
@@ -372,8 +372,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         alert.addButton(withTitle: L("Zrušit", "Cancel"))
         alert.addButton(withTitle: L("Uložit kopii…", "Save a copy…"))
         alert.addButton(withTitle: L("Znovu načíst ze souboru…", "Reload from disk…"))
+        if case TextFileStoreError.conflict = error {
+            alert.addButton(withTitle: L("Porovnat verze…", "Compare versions…"))
+        }
         let response = alert.runModal()
-        if response == .alertSecondButtonReturn { save(note, as: true, completion: completion) }
+        if response.rawValue == NSApplication.ModalResponse.alertThirdButtonReturn.rawValue + 1 {
+            completion(false)
+            editors.first(where: { $0.notes.contains { $0 === note } })?.showComparison(note)
+        } else if response == .alertSecondButtonReturn { save(note, as: true, completion: completion) }
         else if response == .alertThirdButtonReturn, let url = note.fileURL {
             let confirm = NSAlert()
             confirm.messageText = L("Zahodit změny a načíst soubor?", "Discard edits and reload the file?")

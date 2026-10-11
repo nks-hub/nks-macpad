@@ -22,6 +22,7 @@
 
 - 🗂️ **Tabbed notes** - New tabs, pinning, custom draft names, moving tabs between windows, reopening closed files
 - 📄 **Plain text files** - Open, Save, Save As, Save All; UTF-8, UTF-16 and Windows-1250 with encoding, BOM and line endings preserved
+- 🔀 **Compare with disk** - Read-only versions with marked line differences; reload or overwrite only after checking that both versions are still current
 - 💾 **Draft recovery** - Restores drafts, tab order, selection and scroll position after relaunch; recovery copies never touch the original file
 - 🔍 **Search** - Find and replace in the current document, search across all open tabs and jump straight to a match
 - ⌨️ **Keyboard navigation** - Tab switcher, command palette, macOS shortcuts and selected Windows-style Ctrl shortcuts
@@ -30,7 +31,7 @@
 - ⚡ **Quick note** - Compact window, optional menu bar item and configurable global shortcut; works only while MacPad is running
 - 🌐 **Localization** - English and Czech UI
 
-Markdown preview, split view, saved-version history and diff are planned for 1.1 and are not part of the app yet.
+Markdown preview, split view and saved-version history are planned for 1.1 and are not part of the app yet.
 
 ## Requirements
 
@@ -74,6 +75,7 @@ Ctrl aliases work inside the editor and do not override the system keyboard. The
 ## Saving and Privacy
 
 - Files on disk change only after an explicit save. If another program modifies an open file, MacPad reports the conflict; a change during the atomic replace is kept in a separate copy and its path is shown.
+- **File → Compare with file on disk** shows both versions, line numbers, changed lines, encoding and line endings. A stale comparison must be refreshed before reloading or overwriting. Save a copy remains available; there is no automatic merge.
 - Drafts live in `~/Library/Application Support/MacPad`. They are not encrypted. Recovery can be turned off in Settings; discarding a draft removes it from both recovery copies.
 - No account, no cloud sync, no telemetry. Saving into a synced folder works, but concurrent edits can still conflict.
 
@@ -84,7 +86,7 @@ bash scripts/build.sh test
 CONFIGURATION=Release bash scripts/build.sh test
 ```
 
-89 automated tests pass on macOS 15.7.4 in Release: 40 for the file layer and recovery, 49 for AppKit, lifecycle and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 687 ms (median) and inserting a character at the end 9 ms; in a 10 MiB file of Czech text the insert takes 22 ms. Details are in [docs/VALIDATION.md](docs/VALIDATION.md).
+110 automated tests pass on macOS 15.7.4 in Release: 42 for the file layer, recovery and line comparison, 68 for AppKit, lifecycle and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 738 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Details are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 
