@@ -27,6 +27,38 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testSmallStatusTextKeepsContrastInLightAndDarkAppearances() {
+        let editor = makeEditor(text: "Readable status")
+        defer { finish() }
+        func rgb(_ color: NSColor) -> (values: [Double], alpha: Double) {
+            let color = color.usingColorSpace(.sRGB)!
+            return ([Double(color.redComponent), Double(color.greenComponent), Double(color.blueComponent)], Double(color.alphaComponent))
+        }
+        func luminance(_ values: [Double]) -> Double {
+            let linear = values.map { $0 <= 0.04045 ? $0 / 12.92 : pow(($0 + 0.055) / 1.055, 2.4) }
+            return zip(linear, [0.2126, 0.7152, 0.0722]).reduce(0) { $0 + $1.0 * $1.1 }
+        }
+        for name in [NSAppearance.Name.aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua] {
+            let appearance = NSAppearance(named: name)!
+            editor.window?.appearance = appearance
+            appearance.performAsCurrentDrawingAppearance {
+                for failure in [nil, "Test failure"] as [String?] {
+                    editor.app.sessionFailure = failure
+                    editor.updateStatus()
+                    let background = rgb(editor.statusBar.color).values
+                    for label in [editor.status, editor.statusBar.count, editor.statusBar.zoom, editor.statusBar.encoding, editor.statusBar.lineEnding] {
+                        let foreground = rgb(label.textColor!)
+                        let displayed = zip(foreground.values, background).map { $0 * foreground.alpha + $1 * (1 - foreground.alpha) }
+                        let values = [luminance(displayed), luminance(background)].sorted()
+                        let ratio = (values[1] + 0.05) / (values[0] + 0.05)
+                        XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(name.rawValue): \(label.stringValue)")
+                    }
+                }
+            }
+        }
+    }
+
+    @MainActor
     func testEscapeFromCommandResultsDismissesWithoutRunningAction() throws {
         let editor = makeEditor(text: "keep this document")
         defer { finish() }

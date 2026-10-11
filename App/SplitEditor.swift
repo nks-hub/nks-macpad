@@ -46,7 +46,7 @@ final class EditorPaneView: NSView {
         documents.isEnabled = !owner.app.editingLocked
         focusButton.title = (pane == .primary ? L("Levý panel", "Left pane") : L("Pravý panel", "Right pane"))
             + (active ? L(" · aktivní", " · active") : "")
-        focusButton.contentTintColor = active ? .controlAccentColor : .secondaryLabelColor
+        focusButton.contentTintColor = .labelColor
         let notes = owner.notes.filter(\.pinned) + owner.notes.filter { !$0.pinned }
         let currentTitles = notes.map { $0.id.uuidString + $0.title }
         if titles != currentTitles {

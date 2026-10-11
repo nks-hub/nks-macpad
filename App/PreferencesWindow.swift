@@ -92,7 +92,7 @@ final class PreferencesWindow: NSWindowController {
         page.addArrangedSubview(lines)
         let detail = NSTextField(wrappingLabelWithString: L("Vkládání zachová čistý text. Velikost písma můžete měnit také příkazy Přiblížit a Oddálit.",
                                                           "Pasting keeps plain text. You can also resize the font using Zoom in and Zoom out."))
-        detail.textColor = .secondaryLabelColor
+        detail.textColor = .labelColor
         addRow(detail, to: page)
     }
 
@@ -110,7 +110,7 @@ final class PreferencesWindow: NSWindowController {
         language.target = self
         language.action = #selector(changeLanguage(_:))
         addRow(row(L("Jazyk rozhraní", "Interface language"), control: language), to: page)
-        languageHint.textColor = .secondaryLabelColor
+        languageHint.textColor = .labelColor
         addRow(languageHint, to: page)
     }
 
@@ -122,7 +122,7 @@ final class PreferencesWindow: NSWindowController {
         page.addArrangedSubview(restore)
         let detail = NSTextField(wrappingLabelWithString: L("Rozepsané poznámky zůstanou v tomto Macu. Původní soubory se mění jen příkazem Uložit.",
                                                           "Drafts stay on this Mac. Original files change only when you save them."))
-        detail.textColor = .secondaryLabelColor
+        detail.textColor = .labelColor
         addRow(detail, to: page)
         let menuBar = NSButton(checkboxWithTitle: L("Rychlá poznámka v horní liště", "Quick note in menu bar"), target: self, action: #selector(changeMenuBar(_:)))
         menuBar.state = UserDefaults.standard.bool(forKey: "menuBar") ? .on : .off
@@ -159,7 +159,7 @@ final class PreferencesWindow: NSWindowController {
         enabled.state = Preferences.history ? .on : .off
         page.addArrangedSubview(enabled)
         let detail = NSTextField(wrappingLabelWithString: L("Nejvýše 20 verzí na soubor, 30 dní a celkem 100 MiB. Historie je uložená místně bez šifrování. Vypnutí další archivace nemaže existující historii. Obnovení vytvoří nový koncept; nepřepíše soubor ani rozepsané změny.", "Up to 20 versions per file, 30 days and 100 MiB in total. History is stored locally without encryption. Turning it off keeps existing history. Restoring creates a new draft; it does not overwrite files or unsaved edits."))
-        detail.textColor = .secondaryLabelColor
+        detail.textColor = .labelColor
         addRow(detail, to: page)
         let clear = NSButton(title: L("Vymazat všechnu historii…", "Delete all history…"), target: app, action: #selector(AppDelegate.clearAllHistory(_:)))
         clear.bezelStyle = .rounded

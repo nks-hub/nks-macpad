@@ -419,7 +419,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         statusBar.hasWarning = app.sessionFailure != nil || note.externalChange || note.historyFailure != nil
         if let failure = app.sessionFailure {
             status.stringValue = L("Koncept není bezpečně zachován: ", "Draft recovery failed: ") + failure
-            status.textColor = .systemRed
+            status.textColor = NotepadColors.warningText
             return
         }
         if app.pendingOpenCount > 0 {
@@ -430,10 +430,10 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         if let failure = note.historyFailure {
             status.stringValue = L("Soubor uložen, archivace historie selhala. ", "File saved, version history failed. ") + failure
             status.toolTip = status.stringValue
-            status.textColor = .systemRed
+            status.textColor = NotepadColors.warningText
             return
         }
-        status.textColor = .secondaryLabelColor
+        status.textColor = .labelColor
         let value = note.text as NSString
         let selection = textView?.selectedRange() ?? note.selection
         if metricsNoteID != note.id || metricsRevision != note.revision {

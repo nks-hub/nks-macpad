@@ -4,6 +4,13 @@ enum NotepadColors {
     static let canvas = NSColor.textBackgroundColor
     static let chrome = NSColor.windowBackgroundColor
     static let hover = NSColor.labelColor.withAlphaComponent(0.07)
+    static let warningText = NSColor(name: nil) { appearance in
+        var color = NSColor.labelColor
+        appearance.performAsCurrentDrawingAppearance {
+            color = NSColor.systemRed.blended(withFraction: 0.4, of: .labelColor) ?? .labelColor
+        }
+        return color
+    }
 }
 
 class ChromeSurface: NSView {
@@ -102,7 +109,7 @@ final class SearchResultsStack: NSStackView {
             button.contentTintColor = .labelColor
         } else if let label = view as? NSTextField {
             label.font = .systemFont(ofSize: 11)
-            label.textColor = .secondaryLabelColor
+            label.textColor = .labelColor
             label.heightAnchor.constraint(equalToConstant: 24).isActive = true
         }
     }
@@ -134,7 +141,7 @@ final class NotepadStatusBar: ChromeSurface {
         ])
         for label in [position, count, zoom, encoding, lineEnding] {
             label.font = .systemFont(ofSize: 11)
-            label.textColor = .secondaryLabelColor
+            label.textColor = .labelColor
             label.lineBreakMode = .byTruncatingTail
             label.setContentCompressionResistancePriority(.required, for: .horizontal)
         }

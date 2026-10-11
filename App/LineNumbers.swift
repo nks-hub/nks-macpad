@@ -15,7 +15,7 @@ final class LineNumbers: NSRulerView {
     override func drawHashMarksAndLabels(in rect: NSRect) {
         NSColor.windowBackgroundColor.setFill()
         bounds.intersection(rect).fill()
-        let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular), .foregroundColor: NSColor.secondaryLabelColor]
+        let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular), .foregroundColor: NSColor.labelColor]
         for (number, point) in visibleLineLabels() {
             let label = "\(number)" as NSString
             let size = label.size(withAttributes: attributes)

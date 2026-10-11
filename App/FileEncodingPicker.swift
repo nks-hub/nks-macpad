@@ -45,7 +45,7 @@ final class FileEncodingPicker: NSView, NSOpenSavePanelDelegate {
         let hint = NSTextField(labelWithString: L("Náhled prvního souboru (prvních 800 znaků)", "First file preview (first 800 characters)"))
         hint.frame = NSRect(x: 0, y: 116, width: 480, height: 20)
         hint.autoresizingMask = [.width]
-        hint.textColor = .secondaryLabelColor
+        hint.textColor = .labelColor
         addSubview(hint)
         preview.isEditable = false
         preview.isRichText = false
