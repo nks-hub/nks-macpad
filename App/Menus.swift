@@ -94,6 +94,8 @@ extension AppDelegate {
         add(view, L("Připnout / odepnout kartu", "Pin / unpin tab"), #selector(EditorWindowController.togglePin(_:)))
         add(view, L("Pojmenovat koncept…", "Name draft…"), #selector(EditorWindowController.renameNote(_:)))
         add(view, L("Přesunout kartu do nového okna", "Move tab to new window"), #selector(EditorWindowController.moveToWindow(_:)))
+        add(view, L("Rozdělit editor", "Split editor"), #selector(EditorWindowController.toggleSplitEditor(_:)))
+        add(view, L("Přejít do druhého panelu", "Switch editor pane"), #selector(EditorWindowController.switchEditorPane(_:)))
         view.addItem(.separator())
         add(view, L("Zalamovat řádky", "Word wrap"), #selector(EditorWindowController.toggleWrap(_:)))
         add(view, L("Čísla řádků", "Line numbers"), #selector(EditorWindowController.toggleLineNumbers(_:)))
@@ -138,6 +140,8 @@ extension EditorWindowController: NSMenuItemValidation {
         case #selector(toggleWrap(_:)): menuItem.state = Preferences.wrap ? .on : .off
         case #selector(toggleLineNumbers(_:)): menuItem.state = UserDefaults.standard.bool(forKey: "lineNumbers") ? .on : .off
         case #selector(toggleMarkdownPreview(_:)): menuItem.state = markdownPreview != nil ? .on : .off
+        case #selector(toggleSplitEditor(_:)): menuItem.state = splitEnabled ? .on : .off
+        case #selector(switchEditorPane(_:)): return splitEnabled
         case #selector(toggleFocus(_:)): menuItem.state = focusMode ? .on : .off
         case #selector(toggleOnTop(_:)): menuItem.state = window?.level == .floating ? .on : .off
         case #selector(togglePin(_:)): menuItem.state = noteFor(menuItem)?.pinned == true ? .on : .off

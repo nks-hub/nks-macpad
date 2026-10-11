@@ -57,6 +57,6 @@ final class LineNumbers: NSRulerView {
 extension EditorWindowController {
     @objc func toggleLineNumbers(_ sender: Any?) {
         UserDefaults.standard.set(!UserDefaults.standard.bool(forKey: "lineNumbers"), forKey: "lineNumbers")
-        app.editors.forEach { editor in editor.textViews.values.forEach { editor.configure($0) } }
+        app.editors.forEach { editor in editor.allTextViews.forEach { editor.configure($0) } }
     }
 }

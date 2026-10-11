@@ -185,11 +185,11 @@ final class PreferencesWindow: NSWindowController {
     }
     @objc func changeWrap(_ sender: NSButton) {
         Preferences.wrap = sender.state == .on
-        app.editors.forEach { editor in editor.textViews.values.forEach { editor.configure($0) } }
+        app.editors.forEach { editor in editor.allTextViews.forEach { editor.configure($0) } }
     }
     @objc func changeLines(_ sender: NSButton) {
         UserDefaults.standard.set(sender.state == .on, forKey: "lineNumbers")
-        app.editors.forEach { editor in editor.textViews.values.forEach { editor.configure($0) } }
+        app.editors.forEach { editor in editor.allTextViews.forEach { editor.configure($0) } }
     }
     @objc func chooseFont(_ sender: Any?) { app.activeEditor?.chooseFont(sender) }
     @objc func changeFont(_ sender: Any?) {

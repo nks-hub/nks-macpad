@@ -21,6 +21,7 @@
 ## Features
 
 - 🗂️ **Tabbed notes** - New tabs, pinning, custom draft names, moving tabs between windows, reopening closed files
+- ↔️ **Split editor** - Two editable panes with independent selection and scrolling; the same document shares text, identity and undo
 - 📄 **Plain text files** - Open, Save, Save As, Save All; UTF-8, UTF-16 and Windows-1250 with encoding, BOM and line endings preserved
 - 🔀 **Compare with disk** - Read-only versions with marked line differences; reload or overwrite only after checking that both versions are still current
 - 🕘 **Saved version history** - Optional previous file versions, restored as new drafts; limited to 20 per file, 30 days and 100 MiB in total
@@ -32,8 +33,6 @@
 - 🎨 **Workspace** - Light, dark and system appearance, font, zoom, word wrap, line numbers, focus mode and always-on-top
 - ⚡ **Quick note** - Compact window, optional menu bar item and configurable global shortcut; works only while MacPad is running
 - 🌐 **Localization** - English and Czech UI
-
-Split editing is planned for 1.1 and is not part of the app yet.
 
 ## Requirements
 
@@ -74,6 +73,8 @@ Bundle identifiers: `com.nkshub.macpad` (app) and `com.nkshub.macpad.core` (shar
 
 Ctrl aliases work inside the editor and do not override the system keyboard. The quick note global shortcut is off until you set it.
 
+Use **View → Split editor** to open a second pane. Each pane has a document selector; tabs and commands act on the pane marked active. **View → Switch editor pane** moves focus between them. Escape closes the Markdown preview first, if open, then the split. Split layout is temporary; relaunch restores documents and the last active document's cursor.
+
 ## Saving and Privacy
 
 - Files on disk change only after an explicit save. If another program modifies an open file, MacPad reports the conflict; a change during the atomic replace is kept in a separate copy and its path is shown.
@@ -90,7 +91,7 @@ bash scripts/build.sh test
 CONFIGURATION=Release bash scripts/build.sh test
 ```
 
-123 automated tests pass on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 75 for AppKit, lifecycle, Markdown and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 741 ms (median) and inserting a character at the end 7 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Details are in [docs/VALIDATION.md](docs/VALIDATION.md).
+129 automated tests pass on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 81 for AppKit, lifecycle, split editing, Markdown and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 718 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Details are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 

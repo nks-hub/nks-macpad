@@ -6,8 +6,17 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     let id: UUID
     var quick: Bool
     var notes: [TextDocument] = []
-    var activeID: UUID?
+    var primaryID: UUID?
+    var secondaryID: UUID?
+    var focusedPane = EditorPane.primary
+    var splitEnabled = false
+    var activeID: UUID? {
+        get { focusedPane == .secondary && splitEnabled ? secondaryID : primaryID }
+        set { if focusedPane == .secondary && splitEnabled { secondaryID = newValue } else { primaryID = newValue } }
+    }
     var textViews: [UUID: EditorTextView] = [:]
+    var secondaryViews: [UUID: EditorTextView] = [:]
+    var paneHeaders: [EditorPaneView] = []
     let tabs = NSStackView()
     let tabScroller = NSScrollView()
     let body = NSView()
@@ -30,7 +39,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     var searchGeneration = 0
     var busyClosing = false
     private var tabsWidth: NSLayoutConstraint?
-    private var restoringViewState = false
+    var restoringViewState = false
     private var displayedTabs: [TabPresentation] = []
     private var metricsNoteID: UUID?
     private var metricsRevision: UInt64?
@@ -69,7 +78,8 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
 
     required init?(coder: NSCoder) { fatalError("Use init(app:)") }
     var active: TextDocument? { notes.first { $0.id == activeID } }
-    var textView: EditorTextView? { activeID.flatMap { textViews[$0] } }
+    var textView: EditorTextView? { activeID.flatMap { focusedPane == .secondary && splitEnabled ? secondaryViews[$0] : textViews[$0] } }
+    var allTextViews: [EditorTextView] { Array(textViews.values) + Array(secondaryViews.values) }
 
     func buildView() {
         guard let window else { return }
@@ -266,6 +276,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
            current.customTitle == nil, !current.pinned {
             notes.removeAll { $0 === current }
             textViews.removeValue(forKey: current.id)
+            secondaryViews.removeValue(forKey: current.id)
         }
         notes.append(note)
         select(note.id)
@@ -290,66 +301,47 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         let location = min(range.location, length)
         note.selection = NSRange(location: location, length: min(range.length, length - location))
         note.scrollY = max(0, Double(view.enclosingScrollView?.contentView.bounds.minY ?? 0))
+        view.savedScrollY = note.scrollY
     }
 
     func refresh() {
         restoringViewState = true
         defer { restoringViewState = false }
-        if active == nil { activeID = notes.first?.id }
+        for view in allTextViews where view.window === window {
+            view.savedScrollY = max(0, Double(view.enclosingScrollView?.contentView.bounds.minY ?? 0))
+        }
+        if !notes.contains(where: { $0.id == primaryID }) { primaryID = notes.first?.id }
+        if !notes.contains(where: { $0.id == secondaryID }) { secondaryID = primaryID }
+        if !splitEnabled { focusedPane = .primary }
         body.subviews.forEach { $0.removeFromSuperview() }
-        if let note = active {
-            let selection = note.selection
-            let scrollY = note.scrollY
-            let view: EditorTextView
-            if let existing = textViews[note.id] { view = existing }
-            else {
-                view = EditorTextView(frame: .zero)
-                view.owner = self
-                view.note = note
-                view.delegate = self
-                view.isRichText = false
-                view.importsGraphics = false
-                view.allowsUndo = true
-                view.isEditable = !app.editingLocked
-                view.usesFindBar = true
-                view.isIncrementalSearchingEnabled = false
-                view.isAutomaticQuoteSubstitutionEnabled = false
-                view.isAutomaticDashSubstitutionEnabled = false
-                view.isAutomaticTextReplacementEnabled = false
-                view.isAutomaticSpellingCorrectionEnabled = false
-                view.isContinuousSpellCheckingEnabled = false
-                view.isAutomaticLinkDetectionEnabled = false
-                view.textContainerInset = NSSize(width: 18, height: 18)
-                view.layoutManager?.allowsNonContiguousLayout = true
-                view.autoresizingMask = [.width]
-                view.isVerticallyResizable = true
-                view.minSize = NSSize(width: 0, height: 0)
-                view.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
-                view.string = note.text
-                view.textStorage?.delegate = view
-                view.setAccessibilityIdentifier("note-editor")
-                textViews[note.id] = view
-            }
-            let scroll = view.enclosingScrollView ?? NSScrollView()
-            scroll.hasVerticalScroller = true
-            scroll.clipsToBounds = true
-            scroll.autohidesScrollers = true
-            scroll.borderType = .noBorder
-            scroll.backgroundColor = NotepadColors.canvas
-            scroll.documentView = view
-            scroll.translatesAutoresizingMaskIntoConstraints = false
-            installEditorScroll(scroll)
-            configure(view)
+        paneHeaders.removeAll()
+        if let note = notes.first(where: { $0.id == primaryID }) {
+            let primary = editorView(for: note, pane: .primary)
+            var visible = [primary]
+            let scroll = editorScroll(for: primary)
+            let content: NSView
+            if splitEnabled, let other = notes.first(where: { $0.id == secondaryID }) {
+                let secondary = editorView(for: other, pane: .secondary)
+                visible.append(secondary)
+                paneHeaders = [EditorPaneView(owner: self, pane: .primary, scroll: scroll),
+                               EditorPaneView(owner: self, pane: .secondary, scroll: editorScroll(for: secondary))]
+                let stack = NSStackView(views: paneHeaders)
+                stack.orientation = .horizontal
+                stack.distribution = .fillEqually
+                stack.spacing = 1
+                stack.alignment = .top
+                paneHeaders.forEach { $0.heightAnchor.constraint(equalTo: stack.heightAnchor).isActive = true }
+                content = stack
+            } else { content = scroll }
+            let selections = visible.map { view in splitEnabled ? view.selectedRange() : note.selection }
+            let positions = visible.map { view in splitEnabled ? (view.savedScrollY ?? view.note?.scrollY ?? 0) : note.scrollY }
+            installEditorContent(content)
+            visible.forEach { configure($0) }
             window?.contentView?.layoutSubtreeIfNeeded()
-            if let container = view.textContainer {
-                let viewport = NSRect(origin: NSPoint(x: 0, y: scrollY), size: scroll.contentSize)
-                view.layoutManager?.ensureLayout(forBoundingRect: viewport, in: container)
+            for (index, view) in visible.enumerated() {
+                restoreEditorPosition(view, selection: selections[index], scrollY: positions[index])
             }
-            view.setSelectedRange(selection)
-            window?.makeFirstResponder(view)
-            // The line-number ruler insets the clip view; x = 0 would slide the first 48 pt of text under it.
-            scroll.contentView.scroll(to: NSPoint(x: -scroll.contentView.contentInsets.left, y: scrollY))
-            scroll.reflectScrolledClipView(scroll.contentView)
+            window?.makeFirstResponder(textView)
         }
         refreshTitles()
     }
@@ -372,6 +364,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     }
 
     func refreshTitles() {
+        paneHeaders.forEach { $0.update() }
         let ordered = notes.filter(\.pinned) + notes.filter { !$0.pinned }
         let presentation = ordered.map { note in
             TabPresentation(id: note.id, title: note.title, path: note.fileURL?.path,
@@ -530,7 +523,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
             guard note.text.utf8.count != value.utf8.count || !note.text.utf8.elementsEqual(value.utf8) else { return }
             note.changed(to: value)
         }
-        view.enclosingScrollView?.verticalRulerView?.needsDisplay = true
+        allTextViews.filter { $0.note === note }.forEach { $0.enclosingScrollView?.verticalRulerView?.needsDisplay = true }
         app.changed()
         app.refreshSearchResults()
         if note.id == activeID { markdownPreview?.update(note) }
@@ -609,7 +602,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
 
     func reload(_ note: TextDocument) {
         textViews[note.id]?.string = note.text
-        if activeID == note.id { refresh() }
+        if activeID == note.id || (splitEnabled && (primaryID == note.id || secondaryID == note.id)) { refresh() }
     }
 
     func snapshot() -> WindowSnapshot {

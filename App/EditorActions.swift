@@ -19,6 +19,7 @@ extension EditorWindowController {
             guard ok else { self.busyClosing = false; self.app.lockEditing(false); return }
             let oldNotes = self.notes
             let oldActive = self.activeID
+            let oldPanes = (self.primaryID, self.secondaryID, self.focusedPane)
             self.captureSelection()
             self.notes.removeAll { $0 === note }
             if self.activeID == note.id { self.activeID = self.notes.first?.id }
@@ -30,6 +31,7 @@ extension EditorWindowController {
                 self.app.lockEditing(false)
                 if stored {
                     self.textViews.removeValue(forKey: note.id)
+                    self.secondaryViews.removeValue(forKey: note.id)
                     if let url = note.fileURL {
                         self.app.closedFiles.append((url, note.selection))
                         self.app.closedFiles = Array(self.app.closedFiles.suffix(20))
@@ -39,6 +41,7 @@ extension EditorWindowController {
                 } else {
                     let additions = self.notes.filter { candidate in !oldNotes.contains { $0.id == candidate.id } && !candidate.text.isEmpty }
                     self.notes = oldNotes + additions
+                    (self.primaryID, self.secondaryID, self.focusedPane) = oldPanes
                     self.activeID = oldActive
                     self.refresh()
                     self.app.changed()
@@ -78,6 +81,7 @@ extension EditorWindowController {
             notes.insert(note, at: notes.firstIndex { $0.id == before } ?? notes.count)
         } else {
             let view = textViews.removeValue(forKey: note.id)
+            let secondary = secondaryViews.removeValue(forKey: note.id)
             notes.removeAll { $0 === note }
             refresh()
             target.notes.insert(note, at: target.notes.firstIndex { $0.id == before } ?? target.notes.count)
@@ -85,6 +89,11 @@ extension EditorWindowController {
                 view.owner = target
                 view.delegate = target
                 target.textViews[note.id] = view
+            }
+            if let secondary {
+                secondary.owner = target
+                secondary.delegate = target
+                target.secondaryViews[note.id] = secondary
             }
             if notes.isEmpty {
                 if quick {
@@ -201,14 +210,14 @@ extension EditorWindowController {
 
     @objc func toggleWrap(_ sender: Any?) {
         Preferences.wrap.toggle()
-        app.editors.forEach { editor in editor.textViews.values.forEach { editor.configure($0) } }
+        app.editors.forEach { editor in editor.allTextViews.forEach { editor.configure($0) } }
     }
     @objc func zoomIn(_ sender: Any?) { changeSize(by: 1) }
     @objc func zoomOut(_ sender: Any?) { changeSize(by: -1) }
     @objc func zoomReset(_ sender: Any?) { Preferences.fontSize = 14; changeSize(by: 0) }
     func changeSize(by amount: CGFloat) {
         Preferences.fontSize += amount
-        app.editors.forEach { editor in editor.textViews.values.forEach { editor.configure($0) }; editor.updateStatus() }
+        app.editors.forEach { editor in editor.allTextViews.forEach { editor.configure($0) }; editor.updateStatus() }
         app.editors.forEach { editor in if let note = editor.active { editor.markdownPreview?.update(note, delay: 0) } }
     }
     @objc func chooseFont(_ sender: Any?) {
@@ -241,6 +250,7 @@ extension EditorWindowController {
         } else if textView?.enclosingScrollView?.isFindBarVisible == true {
             performFind(.hideFindInterface)
         } else if markdownPreview != nil { toggleMarkdownPreview(nil) }
+        else if splitEnabled { toggleSplitEditor(nil) }
         else if focusMode { toggleFocus(nil) }
         else if quick { window?.performClose(nil) }
     }

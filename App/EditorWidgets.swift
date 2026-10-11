@@ -153,7 +153,15 @@ final class TabButton: NSButton, NSDraggingSource {
 final class EditorTextView: NSTextView, NSTextStorageDelegate {
     weak var owner: EditorWindowController?
     weak var note: TextDocument?
+    var pane = EditorPane.primary
+    var savedScrollY: Double?
     override var undoManager: UndoManager? { note?.undoManager }
+
+    override func becomeFirstResponder() -> Bool {
+        let accepted = super.becomeFirstResponder()
+        if accepted { owner?.editorDidFocus(self) }
+        return accepted
+    }
 
     override func insertText(_ insertString: Any, replacementRange: NSRange) {
         guard isEditable else { return }

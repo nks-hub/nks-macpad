@@ -37,7 +37,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func lockEditing(_ locked: Bool) {
         editingLocked = locked
-        editors.forEach { $0.textViews.values.forEach { $0.isEditable = !locked } }
+        editors.forEach { $0.allTextViews.forEach { $0.isEditable = !locked } }
+        editors.forEach { $0.paneHeaders.forEach { $0.update() } }
         if let eventLock { NSEvent.removeMonitor(eventLock); self.eventLock = nil }
         if locked {
             eventLock = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .leftMouseDown, .leftMouseUp, .leftMouseDragged, .rightMouseDown]) { [weak self] event in

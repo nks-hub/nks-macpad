@@ -202,10 +202,10 @@ extension EditorWindowController {
         refresh()
     }
 
-    func installEditorScroll(_ scroll: NSScrollView) {
+    func installEditorContent(_ editor: NSView) {
         let content: NSView
         if let preview = markdownPreview {
-            let stack = NSStackView(views: [scroll, preview])
+            let stack = NSStackView(views: [editor, preview])
             stack.orientation = .horizontal
             stack.distribution = .fillEqually
             stack.spacing = 1
@@ -213,7 +213,7 @@ extension EditorWindowController {
             for child in stack.arrangedSubviews { child.heightAnchor.constraint(equalTo: stack.heightAnchor).isActive = true }
             content = stack
             if let active { preview.update(active, delay: 0) }
-        } else { content = scroll }
+        } else { content = editor }
         content.translatesAutoresizingMaskIntoConstraints = false
         body.addSubview(content)
         NSLayoutConstraint.activate([
