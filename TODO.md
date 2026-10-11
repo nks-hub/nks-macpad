@@ -34,27 +34,27 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 
 ## B. Editor a soubory
 
-- [ ] Implementovat čistý text, schránku, výběr, undo/redo a vypnutí automatických náhrad textu.
-- [ ] Implementovat karty, fokus, názvy, označení změn a příkazy menu.
+- [x] Implementovat čistý text, schránku, výběr, undo/redo a vypnutí automatických náhrad textu.
+- [x] Implementovat karty, fokus, názvy, označení změn a příkazy menu.
 - [ ] Implementovat otevření více souborů, Finder a rozpoznání opakovaného otevření stejné identity.
 - [ ] Implementovat Uložit a Uložit jako včetně zrušení, přepsání cíle a chyby oprávnění.
-- [ ] Implementovat striktní UTF-8, BOM, UTF-16 a zachování LF/CRLF s bajtovými testy.
-- [ ] Zajistit atomický zápis, kontrolu revize a ochranu před externí změnou při ukládání.
+- [x] Implementovat striktní UTF-8, BOM, UTF-16 a zachování LF/CRLF s bajtovými testy.
+- [x] Zajistit atomický zápis, kontrolu revize a ochranu před externí změnou při ukládání.
 - [ ] Ověřit P01 až P05 a P09 na běžící aplikaci a skutečných souborech.
 
 ## C. Obnova
 
-- [ ] Implementovat verzovanou relaci a průběžné snímky bez zápisu do zdrojového dokumentu.
+- [x] Implementovat verzovanou relaci a průběžné snímky bez zápisu do zdrojového dokumentu.
 - [ ] Implementovat rozdílné zavření karty, okna a aplikace včetně Zrušit a vypnuté obnovy.
 - [ ] Obnovovat obsah, pořadí, aktivní kartu, kurzor a posun; chybějící soubor nabídnout uložit jinam.
 - [ ] Ošetřit chybu snímku, poškozená data, přerušení zápisu a novější neznámé schéma.
-- [ ] Po výslovném zahození odstranit koncept i jeho obnovovací kopie.
+- [x] Po výslovném zahození odstranit koncept i jeho obnovovací kopie.
 - [ ] Ověřit P06 až P08 a P10 včetně pádu a nového spuštění procesu.
 
 ## D. První použitelná verze
 
 - [ ] Doplnit hledání, nahrazování a nahradit vše jako vratnou změnu.
-- [ ] Doplnit zkratky Cmd a vybrané Ctrl aliasy omezené na editor.
+- [x] Doplnit zkratky Cmd a vybrané Ctrl aliasy omezené na editor.
 - [ ] Doplnit zalamování, přiblížení a systémový, světlý i tmavý vzhled.
 - [ ] Projít souvislou práci s poznámkami včetně ukončení a obnovy, P01 až P11.
 - [x] Změřit první výkonové výsledky release buildu pro 1/10/50 MiB a odstranit nalezené zpomalení editoru.
@@ -71,7 +71,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 - [ ] Otestovat nejnižší podporovaný macOS; Intel podporovat pouze po samostatném ověření.
 - [ ] E02: doplnit připnutí a vlastní názvy konceptů se zachováním po restartu; ověřit P17.
 - [ ] E03: přidat přepínač karet a vyhledání existujících příkazů menu; ověřit P18.
-- [ ] E04: přidat hledání ve všech otevřených textech s kontrolou revizí a zrušením; ověřit P19.
+- [x] E04: přidat hledání ve všech otevřených textech s kontrolou revizí a zrušením; ověřit P19.
 - [ ] E05: přidat znovuotevření zavřeného souboru bez archivace zahozených změn a mazání seznamů; ověřit P20.
 - [ ] E06: přidat Uložit vše s pravdivým výsledkem po zrušení nebo částečném selhání; ověřit P21.
 - [ ] E07: přidat datum a čas, duplikaci, přesun a úpravy označených řádků s jedním undo; ověřit P22.
