@@ -2,11 +2,11 @@
 
 Probíhá implementace vývojové verze 0.1.0. Návrh funkcí a pravidel je v [analýze](docs/plans/2026-10-09-macpad-design.md); stav jednotlivých úkolů je v [TODO](TODO.md). Níže jsou cíle pro dokončení verze 1.0, nikoli prohlášení o jejich splnění.
 
-Testování bylo znovu zahájeno společně s úplným code review. Na macOS 15.7.4 prošlo 89 testů zdrojů odpovídajících revizi 82ab271 v konfiguraci Release. Změřené jsou i první výsledky výkonu pro 1/10/50 MiB. Rozsah důkazů a zbývající mezery jsou v [záznamu ověření](docs/VALIDATION.md). Sdílený Mac se používá jen po kontrole cizí aktivity; volný relay sám o sobě není důkaz volné obrazovky.
+Testování bylo znovu zahájeno společně s úplným code review. Na macOS 15.7.4 prošlo 110 testů zdrojů odpovídajících revizi `f212946` v konfiguraci Release. Změřené jsou i výsledky výkonu pro 1/10/50 MiB, hledání a rychlou poznámku. Rozsah důkazů a zbývající mezery jsou v [záznamu ověření](docs/VALIDATION.md). Sdílený Mac se používá jen po kontrole cizí aktivity; volný relay sám o sobě není důkaz volné obrazovky.
 
 Ve zdrojích jsou připravené editor, bezpečné souborové operace, obnova relace i rozšíření E01 až E08. Rozhraní má dokumentové karty, nabídku uvnitř okna, stavový řádek a samostatné části nastavení. Nově je otevírání souborů přesunuté mimo hlavní vlákno a má příkaz ke zrušení. Dokončení těchto bodů závisí na jejich ověření, ne pouze na přítomnosti kódu.
 
-Revize 2: verze 1.0 má vedle známého ovládání Notepadu zahrnout rozšíření E01 až E08. Interní použitelný milník končí etapou D, distribuční vydání vyžaduje A až F. Návrhy R01 až R04 patří do samostatné etapy G pro verzi 1.1. Zdrojový repozitář je veřejný pod licencí MIT; distribuční vydání a etapa G nyní nejsou zahájené.
+Revize 2: verze 1.0 má vedle známého ovládání Notepadu zahrnout rozšíření E01 až E08. Interní použitelný milník končí etapou D, distribuční vydání vyžaduje A až F. Návrhy R01 až R04 patří do samostatné etapy G pro verzi 1.1; R04 je implementované a ověřené. Zdrojový repozitář je veřejný pod licencí MIT; distribuční vydání zůstává podmíněné přejímkou, podpisem a notarizací.
 
 ## A. Reference a technická zkouška
 
@@ -50,7 +50,7 @@ Hotovo: P01 až P14 a P16 až P23 projdou v úplném rozsahu podporované konfig
 
 Bundle identifier je com.nkshub.macpad, název MacPad a licence MIT. Veřejný repozitář je nks-hub/nks-macpad. Distribuční vydání je samostatný krok: připravit opakovatelný release build, podpis, notarizaci a balíček. Ověřit čistou instalaci i aktualizaci s existujícími poznámkami a stabilním umístěním dat. Spuštění staženého balíčku musí projít běžnou kontrolou Gatekeeperu.
 
-Před prvním zveřejněním zkontrolovat celý dosud neveřejný Git včetně historie na přístupy, soukromé adresy a nechtěné soubory. Zkontrolovat licence použitých závislostí a vlastní grafiku. Zveřejnění repozitáře ani release není součástí současného zadání.
+Před prvním zveřejněním zkontrolovat celý dosud neveřejný Git včetně historie na přístupy, soukromé adresy a nechtěné soubory. Zkontrolovat licence použitých závislostí a vlastní grafiku. Zdrojový repozitář už byl zveřejněn; distribuční balíček čeká na dokončení přejímky.
 
 Hotovo: P15 projde na skutečném distribučním balíčku; archiv má verzi, commit a kontrolní součet. Nestačí úspěšné sestavení nebo nahrání. Neověřený Intel nebo starší macOS uvést jako nepodporovaný, dokud nebude otestovaný.
 

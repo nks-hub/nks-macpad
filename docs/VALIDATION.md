@@ -41,6 +41,9 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 ## Provedené kontroly
 
+- Revize `f212946`: 110 testů v Release na macOS 15.7.4 / Apple Silicon (42 core, 68 AppKit). Nové porovnání R04/P27 má testy českých řádků a různých zápisů Unicode, odlišných konců řádků, původního kódování při plánovaném převodu UTF-8/Windows-1250, odmítnutí zastaralé diskové i vlastní revize, potvrzeného přepsání a načtení zobrazené verze. Zároveň prošly dosavadní testy ukládání a obnovy.
+- GUI P27 stejné revize: otevření porovnání z příkazů, dvě verze pouze ke čtení s čísly a značkami řádků, český text a emoji, CRLF proti LF. Další změna skutečného souboru zneplatnila porovnání a zakázala načtení i přepsání. Obnovení zobrazilo novou revizi. Zrušení potvrzení zachovalo obě verze; potvrzené přepsání uložilo přesné bajty UTF-8 s CRLF. Cmd+Q ukončil ověřený testovací proces. Celý průchod používal izolovanou relaci a smyšlený dokument.
+
 - Sestavení a XCTest na macOS 15.7.4, Apple Silicon, Xcode 26.3 a XcodeGen 2.44.1.
 - Celkem 89 testů bez selhání v konfiguraci Release: 40 core a 49 AppKit/životní cyklus/výkon. Testované zdroje odpovídají revizi `82ab271`. Nové testy klávesových zkratek, přesunu karty a kliku na kartu bez oprav selžou.
 - Devět testů průběžných úprav používá skutečný NSTextView: ASCII, kombinující diakritiku, emoji a ZWJ, dávkové změny, prázdný text, undo/redo, stav změn, metriky a obnovovací JSON.
