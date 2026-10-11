@@ -154,7 +154,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
-        if panel.runModal() == .OK { open(panel.urls) }
+        let picker = FileEncodingPicker()
+        panel.accessoryView = picker
+        panel.isAccessoryViewDisclosed = true
+        panel.delegate = picker
+        defer { picker.cancel() }
+        if panel.runModal() == .OK { open(panel.urls, encoding: picker.encoding) }
     }
 
     func application(_ application: NSApplication, open urls: [URL]) { open(urls) }
@@ -182,13 +187,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                             installOpenedFile(url, loaded: loaded, identity: identity, destination: destination, selection: selection)
                         case .failure(let error):
                             if let codecError = error as? TextFileCodecError,
-                               case .invalidData = codecError, encoding == nil {
+                               case .invalidData = codecError {
                                 let alert = NSAlert()
-                                alert.messageText = L("Soubor nelze načíst jako Unicode.", "Cannot read this file as Unicode.")
-                                alert.informativeText = errorMessage(error)
-                                alert.addButton(withTitle: L("Zkusit Windows-1250", "Try Windows-1250"))
+                                alert.messageText = L("Vyberte kódování souboru.", "Choose the file encoding.")
+                                alert.informativeText = url.lastPathComponent
+                                let picker = FileEncodingPicker(url: url, encoding: encoding)
+                                alert.accessoryView = picker
+                                alert.addButton(withTitle: L("Otevřít", "Open"))
                                 alert.addButton(withTitle: L("Zrušit", "Cancel"))
-                                if alert.runModal() == .alertFirstButtonReturn { open([url], encoding: .windows1250, selection: selection) }
+                                alert.buttons[0].isEnabled = false
+                                picker.onValidityChanged = { [weak alert] valid in alert?.buttons.first?.isEnabled = valid }
+                                let response = alert.runModal()
+                                picker.cancel()
+                                if response == .alertFirstButtonReturn, generation == openGeneration {
+                                    open([url], encoding: picker.encoding, selection: selection)
+                                }
                             } else { showError(errorMessage(error)) }
                         }
                         editors.forEach { $0.updateStatus() }
