@@ -1,0 +1,51 @@
+name: macOS 14 tests
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-14-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-14
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.2.app/Contents/Developer
+      CONFIGURATION: Release
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Check platform and install XcodeGen
+        run: |
+          sw_vers
+          uname -m
+          test "$(sw_vers -productVersion | cut -d. -f1)" = 14
+          test "$(uname -m)" = arm64
+          xcodebuild -version
+          curl --fail --location --retry 3 \
+            https://github.com/yonaskolb/XcodeGen/releases/download/2.44.1/xcodegen.zip \
+            --output "$RUNNER_TEMP/xcodegen.zip"
+          printf '%s  %s\n' a2e905fb68446e9bb4008cdfe2e13e3f176d0cbcca828b71770f8e53fca91b73 "$RUNNER_TEMP/xcodegen.zip" | shasum -a 256 -c -
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP/tools"
+          echo "XCODEGEN=$RUNNER_TEMP/tools/xcodegen/bin/xcodegen" >> "$GITHUB_ENV"
+
+      - name: Build and test
+        run: |
+          "$XCODEGEN" --version
+          bash scripts/build.sh test -destination 'platform=macOS,arch=arm64' \
+            -parallel-testing-enabled NO -resultBundlePath "$RUNNER_TEMP/MacPad.xcresult"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: macos-14-test-results
+          path: ${{ runner.temp }}/MacPad.xcresult
+          retention-days: 7

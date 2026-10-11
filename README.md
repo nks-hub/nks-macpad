@@ -1,5 +1,6 @@
 # MacPad
 
+[![macOS 14 tests](https://github.com/nks-hub/nks-macpad/actions/workflows/macos-14.yml/badge.svg)](https://github.com/nks-hub/nks-macpad/actions/workflows/macos-14.yml)
 [![Deployment target](https://img.shields.io/badge/target-macOS%2014-111827.svg)](#requirements)
 [![Swift](https://img.shields.io/badge/Swift-AppKit-F05138.svg?logo=swift&logoColor=white)](https://developer.apple.com/documentation/appkit)
 [![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)](#installation)
@@ -101,6 +102,8 @@ CONFIGURATION=Release bash scripts/build.sh test
 Revision `1b8cf91` passed 143 automated tests on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 95 for AppKit, lifecycle, split editing, Markdown, printing, keyboard navigation, contrast and performance. GUI checks also cover PDF output, the menu bar quick note, search results, settings and window controls with VoiceOver in English and Czech. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 746 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 24 ms. Details and measurement limits are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
+
+The `macOS 14 tests` GitHub Actions workflow can be started manually. It checks the runner's OS and architecture, then runs the Release suite on macOS 14 ARM with Xcode 16.2 and XcodeGen 2.44.1. GitHub plans to retire that runner on November 2, 2026; the workflow will need a replacement after that date.
 
 `bash scripts/release.sh --help` describes release packaging. It requires a Developer ID Application identity in `SIGN_IDENTITY` and a notarytool keychain profile in `NOTARY_PROFILE`. The script builds a clean Git revision for Apple Silicon, signs and notarizes it, checks Gatekeeper, then places a ZIP, SHA-256 checksum and revision manifest in `dist`. It does not publish a release. Version 0.1.0 from `3206e99` passed signing, notarization, quarantined launch and replacement of an earlier development build on macOS 15.7.4. That package predates the printing fix. Remaining release gates are tracked in [TODO.md](TODO.md), including the Windows reference, remaining performance checks, physical keyboards and macOS 14.
 
