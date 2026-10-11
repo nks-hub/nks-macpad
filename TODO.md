@@ -2,7 +2,7 @@
 
 Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritéria jsou v [plánu](PLAN.md).
 
-Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. Nad revizí `fe9675e` prošlo 139 automatických testů na Macu. Tisk, rychlá poznámka z lišty a E08 s VoiceOverem prošly také v běžící aplikaci. Balíček 0.1.0 pro arm64 prošel podpisem, notarizací a přejímkou instalace/aktualizace na macOS 15.7.4. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
+Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. Nad revizí `1b8cf91` prošlo 143 automatických testů na Macu. Tisk, rychlá poznámka z lišty, E08 a české i anglické ovládání s VoiceOverem prošly také v běžící aplikaci. Balíček 0.1.0 pro arm64 prošel podpisem, notarizací a přejímkou instalace/aktualizace na macOS 15.7.4. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
 
 ## Před pokračováním v ověřování
 
