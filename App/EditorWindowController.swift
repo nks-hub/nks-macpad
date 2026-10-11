@@ -361,6 +361,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
         view.textContainer?.widthTracksTextView = Preferences.wrap
         view.textContainer?.containerSize = NSSize(width: Preferences.wrap ? max(view.enclosingScrollView?.contentSize.width ?? body.bounds.width, 1) : .greatestFiniteMagnitude,
                                                    height: .greatestFiniteMagnitude)
+        view.enclosingScrollView?.verticalRulerView?.needsDisplay = true
     }
 
     func refreshTitles() {

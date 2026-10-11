@@ -41,6 +41,8 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 ## Provedené kontroly
 
+- Změna zalamování původně ponechávala sloupec čísel řádků na starých pozicích. Konfigurace editoru nyní vyžádá jeho překreslení také při změně písma a šířky. Po opravě prošlo 25 cílených EditorReviewTests; nový test kontroluje nové souřadnice řádku a zachování textu. Původní vizuální chyba byla ověřena v GUI před opravou i po ní: přepnutí zalamování oběma směry aktualizuje i poslední prázdný řádek. SHA-256 souboru po změně zobrazení a Cmd+S zůstal stejný.
+
 - Další GUI část E01/P16: skutečně registrovaná globální zkratka vyvolala rychlou poznámku nad Finderem; Escape po napsání textu vrátil fokus do Finderu a relace zachovala stejný koncept. Přesun přes příkazy UI přenesl tento dokument se stejným ID do běžného okna a v rychlé poznámce ponechal nový prázdný koncept. Po potvrzeném ukončení procesu zkratka nad Finderem nic neotevřela. S vypnutou obnovou Zrušit ponechalo text a dovolilo pokračovat; Uložit při zavření rychlé poznámky zapsalo celý text a vrátilo fokus do Finderu. Klik na ikonu lišty zůstává neověřený: systém eviduje položku aplikace v zaplněné horní liště, ale nezobrazuje ji na obrazovce.
 - Další GUI část E08/P23: dvacet karet v okně širokém 440 bodů, písmo 24 bodů, vzhled podle systému (tmavý). Soustředění zachovalo fokus a psaní/undo; Escape obnovilo ovládání. Okno navrchu ukázalo stav v dolní liště a mělo skutečnou úroveň 3; vypnutí vrátilo úroveň 0. Po opětovném zapnutí, ukončení a novém procesu byla všechna obnovená okna na běžné úrovni 0. VoiceOver tímto průchodem ověřen nebyl; pomocný proces nemá povolené čtení přes Accessibility API.
 

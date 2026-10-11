@@ -411,6 +411,32 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testWrapChangeRepositionsLineNumbersWithoutEditing() throws {
+        let defaults = UserDefaults.standard
+        let oldWrap = defaults.object(forKey: "wrap")
+        let oldLines = defaults.object(forKey: "lineNumbers")
+        defaults.set(true, forKey: "wrap")
+        defaults.set(true, forKey: "lineNumbers")
+        defer {
+            defaults.set(oldWrap, forKey: "wrap")
+            defaults.set(oldLines, forKey: "lineNumbers")
+            finish()
+        }
+        let text = String(repeating: "long line ", count: 30) + "\nlast\n"
+        let editor = makeEditor(text: text)
+        editor.window?.setContentSize(NSSize(width: 440, height: 500))
+        editor.showWindow(nil)
+        editor.window?.contentView?.layoutSubtreeIfNeeded()
+        editor.window?.displayIfNeeded()
+        let ruler = try XCTUnwrap(editor.textView?.enclosingScrollView?.verticalRulerView as? LineNumbers)
+        let wrappedY = try XCTUnwrap(ruler.visibleLineLabels().first { $0.number == 2 }?.origin.y)
+        editor.toggleWrap(nil)
+        let unwrappedY = try XCTUnwrap(ruler.visibleLineLabels().first { $0.number == 2 }?.origin.y)
+        XCTAssertLessThan(unwrappedY, wrappedY)
+        XCTAssertEqual(editor.active?.text, text)
+    }
+
+    @MainActor
     private func waitForResults(_ editor: EditorWindowController, count: Int) async {
         for _ in 0..<40 {
             let buttons = editor.results.arrangedSubviews.compactMap { $0 as? ResultButton }
