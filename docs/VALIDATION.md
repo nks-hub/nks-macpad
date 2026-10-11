@@ -118,6 +118,26 @@ Tisk krátké poznámky 11. 10. 2026: systémové svislé centrování umisťova
 - GUI průchod nad zdroji `7589e72`: kliknutí na druhou kartu, hledání „Sobota“ napříč kartami a přechod na správný výběr (UTF-16 pozice 17, délka 6), rychlá poznámka z nabídky příkazů a její skrytí přes Escape. Uložení systémovým dialogem ověřeno přesnými bajty UTF-8 bez BOM s CRLF. Ukončení přes nabídku aplikace potvrzeno zánikem jejího procesu. Tento průchod nepokrývá následné změny výkonu.
 - GUI průchod nad zdroji `82ab271` (vstup přes VNC, oddělená datová složka): klik, přetažení a zavření karet včetně voleb Zrušit a Zahodit, kontrola obou kopií relace, nabídka v okně, nedávné soubory, nastavení, světlý a tmavý režim, čísla řádků, záznam globální zkratky ⇧⌘J, rychlá poznámka nad jinou aplikací a návrat fokusu po Escape, vložení textu s CR a CRLF, otevření sedmi souborů po 106 MB, obnova po `kill -9` a ukončení přes ⌘Q. Zrušení otevírání se v GUI nepodařilo načasovat, protože 106 MB se načte zhruba za 0,15 s; frontu pokrývá test.
 
+## Reference Windows Notepadu
+
+Windows 11 Pro 10.0.22631, x64, Notepad 11.2607.14.0, systémová stránka ANSI 1250. Zkouška používá místní vývojářskou registraci s vlastní identitou a daty na samostatné skryté ploše. Všech šest EXE/DLL má stejné SHA-256 jako instalovaný balíček; změněný manifest nemá alias, protokol ani asociace souborů původní aplikace. Testovací kopie se nedistribuuje. Původní LocalState a Settings si zachovaly stejnou sadu čtyř souborů i jejich kontrolní součty.
+
+Rozhraní je anglické. Zalamování a pokračování předchozí relace jsou zapnuté; formátování, kontrola pravopisu a automatické opravy byly pro porovnání čistého textu vypnuté. Vstup jde přes UI Automation a zprávy Win32 do soukromé vstupní fronty. Nejde o zkoušku fyzické klávesnice ani posouzení vykreslení na aktivní ploše uživatele.
+
+| Scénář | Dosud doložená část |
+| --- | --- |
+| P01 | Český text, emoji, rovné uvozovky a dvě pomlčky se zachovaly; nový soubor měl přesné bajty UTF-8 bez BOM. Enter a uložení dvou řádků daly CRLF. |
+| P02 | Undo a Ctrl+Y změnily správný text; úpravy a undo byly oddělené mezi kartami. Formátované vložení ještě ověřené není. |
+| P03 | Uložit jako a jeho zrušení, odmítnuté i potvrzené přepsání existujícího cíle. Potvrzený cíl měl přesné bajty a původní soubor se nezměnil. |
+| P04 | Otevření UTF-8 s BOM, UTF-16 LE/BE s BOM, UTF-8 s LF a Windows-1250. Při uložení bez další editace zůstaly bajty stejné. Neplatné UTF-8 se bez dotazu načetlo jako ANSI/1250. |
+| P05 | Stejná cesta a zástupce `.lnk` aktivovaly původní kartu; soubor bez přípony se otevřel. Hardlink vytvořil další kartu. |
+| P06 | Zrušení zavření zachovalo celý text, Don't save odstranilo kartu, Save uložilo správný soubor a kartu zavřelo. |
+| P07 | Exit ukončil procesy; nové spuštění zachovalo aktivní koncept, pozici kurzoru a pořadí všech 12 názvů karet. |
+
+Ctrl+Y fungovalo, přestože nabídka Edit nemá samostatnou položku Redo. Z nabídky jsou doložené Ctrl+N, Ctrl+Shift+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, Ctrl+Alt+S, Ctrl+W, Ctrl+Shift+W a Ctrl+P; vyvolání přes klávesovou událost bylo použité u otevírání, ukládání, karet a undo/redo. U obnovy po undo/redo se v této metodě objevil nesoulad mezi textem a příznakem změny. Bez dalšího ověření jej nelze vydávat za průkazné chování běžně ovládané reference.
+
+MacPad záměrně zachovává dva rozdíly dané plánem: nejednoznačné kódování vybírá uživatel a hardlinky mají jedinou otevřenou identitu. Přejímka Windows P01–P12 jako celek zůstává otevřená, zejména zbývající větve obnovy, chybové situace, vložení, hledání a tisk.
+
 ## Měření výkonu
 
 ### Zrušení otevírání 50 MiB
