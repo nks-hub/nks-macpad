@@ -120,6 +120,12 @@ Tisk krátké poznámky 11. 10. 2026: systémové svislé centrování umisťova
 
 ## Měření výkonu
 
+### Zrušení otevírání 50 MiB
+
+Na macOS 15.7.4 / Apple Silicon prošly dva samostatné procesy aplikačního kódu `1b8cf91`: zrušení a kontrolní úplné otevření souboru o 52 428 800 bajtech. Izolovaná kopie měla vlastní bundle ID, ad-hoc podpis a pomocnou sondu; produkční zdroje se neměnily. Sonda poslala skutečnému menu klávesovou událost Cmd+. během běžící operace čtení, přibližně 15 ms po požadavku otevřít. Nejde o zkoušku fyzické klávesnice ani měření latence VNC.
+
+Operace se označila za zrušenou. Po jejím doběhnutí byla fronta prázdná, počet čekajících souborů nulový a zůstala jediná karta s celým původním konceptem. V kontrolním běhu vznikla druhá karta s celými 50 MiB textu. Oba procesy skončily řádně, obnovené relace měly očekávané dokumenty a kontrolní součet souboru se nezměnil. Tento průchod uzavírá zrušení velkého souboru; nesplněný cíl studeného startu je popsaný níže.
+
 ### Studená disková cache 11. 10. 2026
 
 Aplikační kód `1b8cf91`, Apple M1 Pro, 32 GiB, macOS 15.7.4. Pět dvojic studený/opakovaný start pro prázdnou relaci a dalších pět pro obnovu 20 karet s 10 MiB českého textu. Před studeným během se úspěšně provedlo systémové `purge`; opakovaný běh následoval bez čištění cache. Nešlo o restart operačního systému ani první instalaci. Každý proces běžel pod běžným uživatelem s novou izolovanou relací. Hlídač nezaznamenal přerušení cizí aktivitou.
@@ -188,7 +194,7 @@ Otevření zahrnuje načtení dokumentu a rozvržení viditelné části. Úprav
 
 - Dokončit referenci Windows Notepadu a zbývající výkonovou přejímku P14; starší důkaz se nepřenáší automaticky na změněné funkce.
 - Ověřit fyzické klávesnice a IME; vzdálené klávesové události nedokládají fyzický hardware.
-- Vyřešit nesplněný cíl studeného startu a ověřit zrušení otevírání 50 MiB podle plánu; ostatní výkonová měření jsou doložená výše.
+- Vyřešit nesplněný cíl studeného startu; ostatní výkonová měření a zrušení otevírání 50 MiB jsou doložené výše.
 - Upravený soubor se do relace ukládá celý i s uloženou verzí; velký upravený soubor proto relaci dál zvětšuje.
 - Prověřit ACL a rozšířené atributy souborů.
 - Intel zůstává nepodporovaný. Automatické testy macOS 14 arm64 a přejímka balíčku na macOS 15.7.4 jsou doložené výše.
