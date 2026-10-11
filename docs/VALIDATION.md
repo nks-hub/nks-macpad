@@ -41,6 +41,13 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 ## Provedené kontroly
 
+- P07–P10 nad sestavením `336e769`: smazaný otevřený soubor s neuloženou změnou přežil Cmd+Q a nový proces včetně kurzoru; Uložit kopii vytvořilo přesné očekávané bajty. Zápis do skutečného adresáře bez oprávnění ukázal chybu a uložení kopie jinam zachovalo celou změnu i původní soubor.
+- S vypnutou obnovou v odděleném nastavení aplikace: Zrušit při zavření okna i Cmd+Q ponechalo rozepsaný text a dovolilo pokračovat. Zrušení následného ukládacího dialogu také zachovalo text. Uložit při zavření okna a při ukončení zapsalo přesné bajty; Zahodit zavřelo okno, respektive ukončilo proces. Nové spuštění zobrazilo prázdnou poznámku, relace měla prázdný seznam oken a uložené dokumenty se nezměnily.
+- Skutečné selhání snímku vyvolané příznakem neměnnosti pouze testovací zálohy: zavření okna oznámilo chybu a okno ponechalo otevřené. Cmd+Q dovolilo zůstat a dál psát. Nouzová cesta Uložit poznámky a ukončit nenabídla zahození; výslovné uložení zachovalo celý text v souboru a proces skončil. Stará obnova zůstala beze změny. Testovací příznak byl následně odstraněn.
+- Poškození hlavní kopie před novým spuštěním obnovilo úplný text ze zálohy s viditelným upozorněním. Další řádné ukončení vytvořilo dvě platné kopie. Nahrazení hlavní kopie schématem 999 vedlo k viditelné chybě; po nouzovém ukončení zůstala novější hlavní kopie i starší záloha byte-for-byte zachovaná. Odmítnutí dvou poškozených kopií a novějšího schématu v kterékoli kopii navíc pokrývají automatické testy.
+- P08: devět samostatných procesů používalo nezměněný Release framework MacPadCore z `336e769`. Testovací knihovna ukončila proces signálem SIGKILL před/po odstranění zálohy, po částečném zápisu do dočasného souboru, před/po synchronizaci a před/po přejmenování hlavní i záložní kopie. Každý zásah potvrdil konkrétní kontrolní bod a návratový stav SIGKILL. Nový proces vždy načetl celou starou relaci před nahrazením hlavní kopie, nebo celou novou po něm. Nejde o zkoušku výpadku napájení.
+
+
 - Revize `336e769`: výběr kódování v dialogu Otevřít i při chybných bajtech, s viditelným náhledem. Před úpravou velikosti náhledu prošla celá sada 132 testů (48 core + 84 AppKit); po této úpravě všechny tři cílené testy včetně viditelné plochy náhledu a asynchronního načtení uvnitř modálního dialogu. Následný GUI průchod ověřil UTF-16 LE bez BOM a Windows-1250 s ruční volbou a českým náhledem. UTF-8, UTF-8 BOM, UTF-16 LE/BE s BOM, UTF-16 LE bez BOM a Windows-1250 po Cmd+S zachovaly SHA-256 původních bajtů včetně LF/CRLF. Chybné UTF-8 mělo zakázané otevření; Zrušit zachovalo soubor i počet karet.
 - GUI P01/P02/P05: český text a emoji vložené současně jako plain text a barevný tučný RTF skončily jako čistý text. Uvozovky a dvě pomlčky zůstaly beze změny, dvě undo/redo a přepínání karet zachovaly oddělené změny. Uložené bajty odpovídaly UTF-8 bez BOM s CRLF. Více souborů včetně souboru bez přípony, symlinku a hardlinku vytvořilo jen dvě identity; skutečný Finder alias přetažený na aplikaci aktivoval původní kartu bez duplikace.
 - GUI P03 a část P09: skutečné ENOSPC na omezeném 64 MiB testovacím svazku zachovalo původní soubor a všech 2 162 688 bajtů rozepsaného obsahu v obnově. Uložit kopii mimo plný svazek uložilo přesné bajty. Zrušení následného Uložit jako zachovalo identitu a další neuloženou změnu; potvrzené přepsání existujícího cíle uložilo správné bajty bez změny starší kopie. Testovací svazek byl odpojen. Systémový disk nebyl zaplněn.
@@ -98,7 +105,7 @@ Otevření zahrnuje načtení dokumentu a rozvržení viditelné části. Úprav
 - Ověřit fyzické klávesnice, IME a VoiceOver; vzdálený vstup není jejich náhradou.
 - Doplnit měření celkové odezvy včetně vykreslení, paměti, 20 karet a dlouhých řádků podle plánu.
 - Upravený soubor se do relace ukládá celý i s uloženou verzí; velký upravený soubor proto relaci dál zvětšuje.
-- Prověřit ACL, rozšířené atributy a řízená selhání v jednotlivých krocích zápisu relace.
+- Prověřit ACL a rozšířené atributy souborů.
 - Otestovat macOS 14, Intel a distribuční balíček před jejich označením za podporované.
 
 ## Sdílený testovací Mac

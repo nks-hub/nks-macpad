@@ -37,7 +37,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 - [x] Implementovat čistý text, schránku, výběr, undo/redo a vypnutí automatických náhrad textu.
 - [x] Implementovat karty, fokus, názvy, označení změn a příkazy menu.
 - [x] Implementovat otevření více souborů, Finder a rozpoznání opakovaného otevření stejné identity.
-- [ ] Implementovat Uložit a Uložit jako včetně zrušení, přepsání cíle a chyby oprávnění.
+- [x] Implementovat Uložit a Uložit jako včetně zrušení, přepsání cíle a chyby oprávnění.
 - [x] Implementovat striktní UTF-8, BOM, UTF-16 a zachování LF/CRLF s bajtovými testy.
 - [x] Zajistit atomický zápis, kontrolu revize a ochranu před externí změnou při ukládání.
 - [ ] Ověřit P01 až P05 a P09 na běžící aplikaci a skutečných souborech.
@@ -46,8 +46,8 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 
 - [x] Implementovat verzovanou relaci a průběžné snímky bez zápisu do zdrojového dokumentu.
 - [ ] Implementovat rozdílné zavření karty, okna a aplikace včetně Zrušit a vypnuté obnovy.
-- [ ] Obnovovat obsah, pořadí, aktivní kartu, kurzor a posun; chybějící soubor nabídnout uložit jinam.
-- [ ] Ošetřit chybu snímku, poškozená data, přerušení zápisu a novější neznámé schéma.
+- [x] Obnovovat obsah, pořadí, aktivní kartu, kurzor a posun; chybějící soubor nabídnout uložit jinam.
+- [x] Ošetřit chybu snímku, poškozená data, přerušení zápisu a novější neznámé schéma.
 - [x] Po výslovném zahození odstranit koncept i jeho obnovovací kopie.
 - [ ] Ověřit P06 až P08 a P10 včetně pádu a nového spuštění procesu.
 
