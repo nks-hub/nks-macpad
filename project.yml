@@ -33,6 +33,8 @@ targets:
         CFBundleLocalizations: [cs, en]
         CFBundleDevelopmentRegion: en
         CFBundleIdentifier: com.nkshub.macpad
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSPrincipalClass: NSApplication
         NSHighResolutionCapable: true
         NSSupportsAutomaticTermination: false
