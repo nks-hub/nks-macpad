@@ -2,7 +2,7 @@
 
 Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritéria jsou v [plánu](PLAN.md).
 
-Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Po druhém review a opravách prošlo 89 automatických testů na Macu. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
+Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Nad revizí `89800eb` prošlo 102 automatických testů na Macu. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
 
 ## Před pokračováním v ověřování
 
@@ -77,8 +77,8 @@ Implementace editoru a rozšíření E01 až E08 je ve zdrojích. Po druhém rev
 - [ ] E07: přidat datum a čas, duplikaci, přesun a úpravy označených řádků s jedním undo; ověřit P22.
 - [ ] E08: přidat režim soustředění a dočasné okno navrchu s dostupným vypnutím; ověřit P23.
 - [ ] E01: přidat rychlou poznámku ze systémové lišty a zkratky nad stejným dokumentovým stavem; ověřit P16.
-- [ ] Ověřit běžné psaní, 20 karet, výsledky hledání a rychlou poznámku v malé šířce, obou motivech a s velkým písmem.
-- [ ] Změřit odezvu rychlé poznámky a hledání napříč kartami podle doplněných výkonových cílů.
+- [x] Ověřit běžné psaní, 20 karet, výsledky hledání a rychlou poznámku v malé šířce, obou motivech a s velkým písmem (440/480 bodů, písmo 24 bodů, revize `89800eb`).
+- [x] Změřit odezvu rychlé poznámky a hledání napříč kartami podle doplněných výkonových cílů: 1/16 ms a 334/335 ms (medián/maximum, pět opakování).
 
 ## F. Veřejné vydání
 

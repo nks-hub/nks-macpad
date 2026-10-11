@@ -51,6 +51,18 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 ## Měření výkonu
 
+### Doplnění 11. 10. 2026
+
+Nad zdroji revize `89800eb` prošlo v Release na stejném Macu 102 testů (40 core, 62 AppKit). Běh přes RemoteCmd skončil bez přerušení. Nové testy ověřují UTF-16 pozice hledání za emoji a odmítnutí starého výsledku po editaci, zrušení čekajícího i již běžícího hledání, kolizi a uvolnění globální zkratky, dokončení snímku před skrytím rychlé poznámky a opětovné otevření stejného konceptu. Kolize používá skutečné Carbon API; nejde o zkoušku fyzických kláves.
+
+Pět opakování: hledání ve 20 kartách s celkem 10 MiB českého textu mělo medián 334 ms a maximum 335 ms včetně čekání 150 ms před hledáním, sestavení výsledků, rozvržení a `displayIfNeeded`. Rychlá poznámka měla 1/16 ms včetně `displayIfNeeded`; první vyvolání okno vytvořilo, další znovu zobrazila. Oba cíle (500 a 300 ms) jsou splněné pro tento postup; čas fyzického zobrazení snímku monitorem se neměřil. Jeden řádek se dvěma miliony znaků: otevření 482/485 ms, vložení znaku 2/3 ms. Toto měření nenahrazuje zbývající přejímku P14.
+
+Další testovací Mac není dostupný. macOS 14 a fyzické Mac/Windows klávesnice zůstávají neověřené.
+
+GUI průchod stejné revize přes VNC: běžný editor široký 440 bodů, rychlá poznámka 480 bodů, písmo 24 bodů, 20 karet, světlý i tmavý motiv. Ověřeno psaní a undo, hledání přes Cmd+Shift+F, klik na výsledek za emoji (UTF-16 rozsah 50/6), skrytí výsledků přes Escape, přepínač karet s výběrem 20. karty, příkaz pro rychlou poznámku, její obsah a skrytí přes Escape s návratem fokusu. Cmd+Q ukončil oba testovací procesy. Po novém spuštění se zachovala aktivní karta, výběr a stejná rychlá poznámka bez duplikace; obsah a identita byly ověřené i v uložené relaci. Snímky zůstávají mimo Git. VNC zde mapuje Cmd na `super`; tento vstup nedokazuje fyzickou klávesnici ani VoiceOver.
+
+### Předchozí měření
+
 Apple M1 Pro, 32 GiB RAM, macOS 15.7.4, Xcode 26.3. Release sestavení se zapnutou testovatelností. Každá velikost má pět vzorků nad skutečným AppKitem, souborem a krátkými řádky. Český text má řádky s diakritikou; před opravou v něm vložení znaku trvalo 83 ms. Postup je v `Tests/MacPadAppTests/PerformanceTests.swift`.
 
 | Velikost | Otevření medián / maximum | Vložení znaku medián / maximum | Přechod na konec medián / maximum |
