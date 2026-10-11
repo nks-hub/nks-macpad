@@ -51,6 +51,7 @@ final class CommandPanel: NSWindowController, NSTableViewDataSource, NSTableView
         search.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -24).isActive = true
         scroll.widthAnchor.constraint(equalTo: search.widthAnchor).isActive = true
         let choose = NSButton(title: L("Otevřít", "Open"), target: self, action: #selector(choose(_:)))
+        choose.keyEquivalent = "\r"
         stack.addArrangedSubview(choose)
         if !choices.isEmpty { table.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false) }
     }
@@ -82,6 +83,7 @@ final class CommandPanel: NSWindowController, NSTableViewDataSource, NSTableView
     func dismiss() {
         if let window { editor?.window?.endSheet(window) }
     }
+    override func cancelOperation(_ sender: Any?) { dismiss() }
     func windowShouldClose(_ sender: NSWindow) -> Bool { dismiss(); return false }
     @objc func choose(_ sender: Any?) {
         guard filtered.indices.contains(table.selectedRow) else { return }

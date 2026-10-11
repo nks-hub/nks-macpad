@@ -27,6 +27,32 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testEscapeFromCommandResultsDismissesWithoutRunningAction() throws {
+        let editor = makeEditor(text: "keep this document")
+        defer { finish() }
+        editor.presentPanel(title: "Commands", choices: [CommandChoice(title: "Run") { XCTFail("Cancelled command ran") }])
+        let panel = try XCTUnwrap(editor.panel)
+        let window = try XCTUnwrap(panel.window)
+        defer {
+            if window.sheetParent != nil { editor.window?.endSheet(window) }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        XCTAssertTrue(window.makeFirstResponder(panel.table))
+        XCTAssertTrue(window.firstResponder === panel.table)
+        let event = try XCTUnwrap(NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [],
+            timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber,
+            context: nil, characters: "\u{1b}", charactersIgnoringModifiers: "\u{1b}",
+            isARepeat: false, keyCode: 53))
+        window.sendEvent(event)
+        let deadline = Date().addingTimeInterval(1)
+        while editor.panel != nil && Date() < deadline { RunLoop.current.run(until: Date().addingTimeInterval(0.01)) }
+        XCTAssertNil(editor.panel)
+        XCTAssertNil(editor.window?.attachedSheet)
+        XCTAssertTrue(editor.window?.firstResponder === editor.textView)
+        XCTAssertEqual(editor.active?.text, "keep this document")
+    }
+
+    @MainActor
     func testInWindowMenuPreservesSearchResponderAcrossLanguageChange() throws {
         let editor = makeEditor(text: "keep this document")
         let oldMenu = NSApp.mainMenu
