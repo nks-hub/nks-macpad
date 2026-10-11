@@ -6,6 +6,8 @@ final class PerformanceTests: XCTestCase {
     @MainActor func testOneMiBDocument() async throws { try await sampleDocument(mebibytes: 1) }
     @MainActor func testTenMiBDocument() async throws { try await sampleDocument(mebibytes: 10) }
     @MainActor func testFiftyMiBDocument() async throws { try await sampleDocument(mebibytes: 50) }
+    @MainActor func testOneMiBInsertion() throws { try sampleInsertion(mebibytes: 1) }
+    @MainActor func testTenMiBInsertion() throws { try sampleInsertion(mebibytes: 10) }
     @MainActor func testTwoMillionCharacterLine() async throws {
         try await sampleDocument(mebibytes: 2, line: String(repeating: "x", count: 2_000_000) + "\n")
     }
@@ -101,14 +103,17 @@ final class PerformanceTests: XCTestCase {
                 if let container = view.textContainer {
                     view.layoutManager?.ensureLayout(forBoundingRect: view.visibleRect, in: container)
                 }
+                editor.window?.displayIfNeeded()
                 openTimes.append(ProcessInfo.processInfo.systemUptime - openedAt)
                 let end = (view.string as NSString).length
                 let navigatedAt = ProcessInfo.processInfo.systemUptime
                 view.setSelectedRange(NSRange(location: end, length: 0))
                 view.scrollRangeToVisible(view.selectedRange())
+                editor.window?.displayIfNeeded()
                 navigationTimes.append(ProcessInfo.processInfo.systemUptime - navigatedAt)
                 let editedAt = ProcessInfo.processInfo.systemUptime
                 view.insertText("x", replacementRange: NSRange(location: end, length: 0))
+                editor.window?.displayIfNeeded()
                 editTimes.append(ProcessInfo.processInfo.systemUptime - editedAt)
                 XCTAssertEqual(note.text.utf8.count, content.utf8.count + 1)
                 XCTAssertTrue(note.isDocumentEdited)
@@ -123,7 +128,38 @@ final class PerformanceTests: XCTestCase {
         let open = openTimes.sorted()
         let edit = editTimes.sorted()
         let navigation = navigationTimes.sorted()
-        print(String(format: "PERFORMANCE %d MiB %@ open median=%.3fs max=%.3fs edit median=%.3fs max=%.3fs navigation median=%.3fs max=%.3fs",
+        print(String(format: "PERFORMANCE with display %d MiB %@ open median=%.3fs max=%.3fs edit median=%.3fs max=%.3fs navigation median=%.3fs max=%.3fs",
                      mebibytes, line.utf8.count == line.utf16.count ? "ASCII" : "Unicode", open[2], open[4], edit[2], edit[4], navigation[2], navigation[4]))
+    }
+
+    @MainActor
+    private func sampleInsertion(mebibytes: Int) throws {
+        _ = NSApplication.shared
+        let line = "Příliš žluťoučký kůň 0123456789\n"
+        let text = String(repeating: line, count: mebibytes * 1_048_576 / line.utf8.count)
+        var times: [Double] = []
+        for _ in 0..<5 {
+            try autoreleasepool {
+                let app = AppDelegate(sessionDirectory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
+                let editor = app.makeWindow()
+                defer { editor.window?.delegate = nil; editor.window?.close() }
+                let note = TextDocument()
+                editor.addNote(note)
+                editor.showWindow(nil)
+                let view = try XCTUnwrap(editor.textView)
+                let started = ProcessInfo.processInfo.systemUptime
+                view.insertText(text, replacementRange: NSRange(location: 0, length: 0))
+                view.scrollRangeToVisible(view.selectedRange())
+                editor.window?.contentView?.layoutSubtreeIfNeeded()
+                editor.window?.displayIfNeeded()
+                times.append(ProcessInfo.processInfo.systemUptime - started)
+                XCTAssertEqual(note.text, text)
+                view.breakUndoCoalescing()
+                note.undoManager?.undo()
+                XCTAssertEqual(note.text, "")
+            }
+        }
+        times.sort()
+        print(String(format: "PERFORMANCE with display %d MiB Unicode insertion median=%.3fs max=%.3fs", mebibytes, times[2], times[4]))
     }
 }
