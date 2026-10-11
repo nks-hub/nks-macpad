@@ -45,11 +45,11 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 ## C. Obnova
 
 - [x] Implementovat verzovanou relaci a průběžné snímky bez zápisu do zdrojového dokumentu.
-- [ ] Implementovat rozdílné zavření karty, okna a aplikace včetně Zrušit a vypnuté obnovy.
+- [x] Implementovat rozdílné zavření karty, okna a aplikace včetně Zrušit a vypnuté obnovy.
 - [x] Obnovovat obsah, pořadí, aktivní kartu, kurzor a posun; chybějící soubor nabídnout uložit jinam.
 - [x] Ošetřit chybu snímku, poškozená data, přerušení zápisu a novější neznámé schéma.
 - [x] Po výslovném zahození odstranit koncept i jeho obnovovací kopie.
-- [ ] Ověřit P06 až P08 a P10 včetně pádu a nového spuštění procesu.
+- [x] Ověřit P06 až P08 a P10 včetně pádu a nového spuštění procesu.
 
 ## D. První použitelná verze
 
@@ -69,8 +69,8 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 - [ ] Ověřit Home/End, výběr a modifikátory na fyzické Mac i Windows klávesnici.
 - [ ] Ověřit P12 až P14, dlouhé řádky, větší soubory a navržené výkonové cíle.
 - [ ] Otestovat nejnižší podporovaný macOS; Intel podporovat pouze po samostatném ověření.
-- [ ] E02: doplnit připnutí a vlastní názvy konceptů se zachováním po restartu; ověřit P17.
-- [ ] E03: přidat přepínač karet a vyhledání existujících příkazů menu; ověřit P18.
+- [x] E02: doplnit připnutí a vlastní názvy konceptů se zachováním po restartu; ověřit P17.
+- [x] E03: přidat přepínač karet a vyhledání existujících příkazů menu; ověřit P18.
 - [x] E04: přidat hledání ve všech otevřených textech s kontrolou revizí a zrušením; ověřit P19.
 - [ ] E05: přidat znovuotevření zavřeného souboru bez archivace zahozených změn a mazání seznamů; ověřit P20.
 - [ ] E06: přidat Uložit vše s pravdivým výsledkem po zrušení nebo částečném selhání; ověřit P21.

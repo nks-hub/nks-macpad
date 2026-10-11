@@ -41,6 +41,10 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 ## Provedené kontroly
 
+- GUI E02/P17: koncept dostal vlastní název a připnutí přes příkazy UI, přesunul se do druhého okna a přežil ukončení i nový proces se stejným ID, obsahem, názvem a připnutím. Uložit nabídlo vlastní název s `.txt` a uložilo přesný obsah. U uloženého souboru příkaz pojmenování nebyl dostupný a jeho název ani bajty se nezměnily.
+- GUI E03/P18: šipky a Enter vybíraly příkazy i karty napříč okny. Enter nad prázdným výsledkem nic nespustil; Escape v obou panelech vrátil fokus a následné psaní změnilo správný dokument. Nedostupné pojmenování uloženého souboru nebylo ani ve výsledcích příkazů. Cmd+P otevřelo systémový tiskový dialog s náhledem vybraného dokumentu; tisk byl zrušen.
+- GUI P06: Uložit při Cmd+W zapsalo přesné bajty konceptu a odstranilo jeho kartu z relace; dřívější průchod doložil Zrušit i Zahodit. GUI P10: externí přejmenování uloženého otevřeného souboru vyvolalo při Cmd+S konflikt. Zrušení zachovalo přejmenovaný soubor beze změny a celý text v obnově, původní cesta nebyla potichu znovu vytvořena.
+
 - E07/P22: 13 cílených EditorTests prošlo v Release na macOS 15.7.4. Nový test nad skutečným NSTextView doplnil duplikaci posledního řádku bez koncového LF, řazení a přesun po psaní. První undo vrátí jen příkaz, druhé předchozí psaní, dvě redo obnoví výsledek. Ve všech šesti kombinacích příkazu a LF/CRLF skutečné `app.save` zapsalo přesné očekávané bajty. Spolu s dosavadními testy českého řazení, duplicit, prázdných řádků, hranic výběru a data je řádková přejímka doložená.
 
 - P07–P10 nad sestavením `336e769`: smazaný otevřený soubor s neuloženou změnou přežil Cmd+Q a nový proces včetně kurzoru; Uložit kopii vytvořilo přesné očekávané bajty. Zápis do skutečného adresáře bez oprávnění ukázal chybu a uložení kopie jinam zachovalo celou změnu i původní soubor.
