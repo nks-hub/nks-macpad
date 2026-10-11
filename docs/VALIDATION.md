@@ -118,6 +118,21 @@ Tisk krátké poznámky 11. 10. 2026: systémové svislé centrování umisťova
 
 ## Měření výkonu
 
+### Studená disková cache 11. 10. 2026
+
+Aplikační kód `1b8cf91`, Apple M1 Pro, 32 GiB, macOS 15.7.4. Pět dvojic studený/opakovaný start pro prázdnou relaci a dalších pět pro obnovu 20 karet s 10 MiB českého textu. Před studeným během se úspěšně provedlo systémové `purge`; opakovaný běh následoval bez čištění cache. Nešlo o restart operačního systému ani první instalaci. Každý proces běžel pod běžným uživatelem s novou izolovanou relací. Hlídač nezaznamenal přerušení cizí aktivitou.
+
+| Relace a cache | Start medián / maximum | RSS medián / maximum |
+| --- | --- | --- |
+| Prázdná, po `purge` | 1 775 / 2 046 ms | 84,6 / 84,9 MiB |
+| Prázdná, opakovaný start | 201 / 214 ms | 84,8 / 84,9 MiB |
+| 20 karet, po `purge` | 1 814 / 2 166 ms | 127,2 / 127,6 MiB |
+| 20 karet, opakovaný start | 447 / 462 ms | 127,8 / 129,3 MiB |
+
+Měřený úsek jde od spuštění procesu k viditelnému aktivnímu oknu s editovatelným textovým pohledem, po rozložení a `displayIfNeeded`. Pozorovatel běžel v izolované kopii se změněným bundle ID a ad-hoc podpisem; měření nenahrazuje start distribučního balíčku přes LaunchServices. Čas zahrnuje zjištění kontrolního souboru, VNC nebylo časomírou. RSS je odběr 1,5 s po připravenosti, nikoli maximum. Každý proces skončil řádně a všechny obnovené relace zachovaly všech 20 textů.
+
+Navržený cíl studeného startu do jedné sekundy není splněný; paměť prázdného editoru je pod orientačním limitem 100 MiB. Doplňující diagnostický pár měl 1 608/185 ms pro studený/opakovaný start. Ve studeném průchodu začalo `applicationDidFinishLaunching` v 1 061 ms a skončilo v 1 347 ms; připravenost okna byla zjištěna v 1 596 ms. Jde o rozdělení jednoho běhu, ne o další statistické měření ani důkaz, že cíle nelze dosáhnout. Výkonová přejímka zůstává otevřená.
+
 ### Start procesu a vykreslení 11. 10. 2026
 
 Celá sada nad `92cb167` prošla: 134 testů (48 core + 86 AppKit). Poté prošlo devět cílených výkonových testů revize `1cb6037`, včetně dvou nových testů velkého vložení. Pět opakování každého scénáře na stejném Apple M1 Pro / macOS 15.7.4:
@@ -171,7 +186,7 @@ Otevření zahrnuje načtení dokumentu a rozvržení viditelné části. Úprav
 
 - Dokončit referenci Windows Notepadu a zbývající výkonovou přejímku P14; starší důkaz se nepřenáší automaticky na změněné funkce.
 - Ověřit fyzické klávesnice a IME; vzdálené klávesové události nedokládají fyzický hardware.
-- Doplnit start se studenou cache a zrušení otevírání 50 MiB podle plánu; odezva s vykreslením, paměť a obnova 20 karet jsou změřené výše.
+- Vyřešit nesplněný cíl studeného startu a ověřit zrušení otevírání 50 MiB podle plánu; ostatní výkonová měření jsou doložená výše.
 - Upravený soubor se do relace ukládá celý i s uloženou verzí; velký upravený soubor proto relaci dál zvětšuje.
 - Prověřit ACL a rozšířené atributy souborů.
 - Otestovat macOS 14 a Intel před jejich označením za podporované; balíček arm64 prošel P15 na macOS 15.7.4.
