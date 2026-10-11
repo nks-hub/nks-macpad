@@ -41,6 +41,8 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 ## Provedené kontroly
 
+- E07/P22: 13 cílených EditorTests prošlo v Release na macOS 15.7.4. Nový test nad skutečným NSTextView doplnil duplikaci posledního řádku bez koncového LF, řazení a přesun po psaní. První undo vrátí jen příkaz, druhé předchozí psaní, dvě redo obnoví výsledek. Ve všech šesti kombinacích příkazu a LF/CRLF skutečné `app.save` zapsalo přesné očekávané bajty. Spolu s dosavadními testy českého řazení, duplicit, prázdných řádků, hranic výběru a data je řádková přejímka doložená.
+
 - P07–P10 nad sestavením `336e769`: smazaný otevřený soubor s neuloženou změnou přežil Cmd+Q a nový proces včetně kurzoru; Uložit kopii vytvořilo přesné očekávané bajty. Zápis do skutečného adresáře bez oprávnění ukázal chybu a uložení kopie jinam zachovalo celou změnu i původní soubor.
 - S vypnutou obnovou v odděleném nastavení aplikace: Zrušit při zavření okna i Cmd+Q ponechalo rozepsaný text a dovolilo pokračovat. Zrušení následného ukládacího dialogu také zachovalo text. Uložit při zavření okna a při ukončení zapsalo přesné bajty; Zahodit zavřelo okno, respektive ukončilo proces. Nové spuštění zobrazilo prázdnou poznámku, relace měla prázdný seznam oken a uložené dokumenty se nezměnily.
 - Skutečné selhání snímku vyvolané příznakem neměnnosti pouze testovací zálohy: zavření okna oznámilo chybu a okno ponechalo otevřené. Cmd+Q dovolilo zůstat a dál psát. Nouzová cesta Uložit poznámky a ukončit nenabídla zahození; výslovné uložení zachovalo celý text v souboru a proces skončil. Stará obnova zůstala beze změny. Testovací příznak byl následně odstraněn.

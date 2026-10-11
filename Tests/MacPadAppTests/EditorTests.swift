@@ -74,6 +74,52 @@ final class EditorTests: XCTestCase {
     }
 
     @MainActor
+    func testLineCommandsKeepTypingUndoAndSavedLineEndings() async throws {
+        _ = NSApplication.shared
+        let directory = temporaryDirectory()
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let operations: [(String, String, (EditorWindowController) -> Void)] = [
+            ("duplicate", "z\nax\nax", { $0.duplicateLine(nil) }),
+            ("sort", "ax\nz", {
+                $0.textView?.setSelectedRange(NSRange(location: 0, length: 4))
+                $0.sortLines(nil)
+            }),
+            ("move", "ax\nz", { $0.moveLineUp(nil) })
+        ]
+        for ending in ["\n", "\r\n"] {
+            for (name, expected, operation) in operations {
+                let url = directory.appendingPathComponent(name + (ending == "\n" ? "-lf.txt" : "-crlf.txt"))
+                try Data("z\(ending)a".utf8).write(to: url)
+                let app = AppDelegate(sessionDirectory: directory.appendingPathComponent(UUID().uuidString))
+                let editor = app.makeWindow()
+                defer { editor.window?.orderOut(nil) }
+                let note = TextDocument()
+                try note.load(url)
+                editor.addNote(note)
+                let view = try XCTUnwrap(editor.textView)
+                view.setSelectedRange(NSRange(location: 3, length: 0))
+                view.insertText("x", replacementRange: view.selectedRange())
+                try await Task.sleep(nanoseconds: 20_000_000)
+                operation(editor)
+                try await Task.sleep(nanoseconds: 20_000_000)
+                XCTAssertEqual(note.text, expected, name)
+                note.undoManager?.undo()
+                XCTAssertEqual(note.text, "z\nax", "One undo must revert only \(name)")
+                note.undoManager?.undo()
+                XCTAssertEqual(note.text, "z\na", "Earlier typing remains a separate undo")
+                note.undoManager?.redo()
+                note.undoManager?.redo()
+                XCTAssertEqual(note.text, expected, name)
+                let saved = expectation(description: name + " saved")
+                app.save(note) { ok in XCTAssertTrue(ok); saved.fulfill() }
+                await fulfillment(of: [saved], timeout: 3)
+                XCTAssertEqual(try Data(contentsOf: url), Data(expected.replacingOccurrences(of: "\n", with: ending).utf8))
+            }
+        }
+    }
+
+    @MainActor
     func testMoveTabKeepsVisibleUndoHistory() {
         _ = NSApplication.shared
         let app = AppDelegate(sessionDirectory: temporaryDirectory())
