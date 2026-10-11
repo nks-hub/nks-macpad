@@ -6,6 +6,8 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 ## Opravené nálezy
 
+Tisk krátké poznámky 11. 10. 2026: systémové svislé centrování umisťovalo text doprostřed stránky. Tisková operace nyní začíná u horního okraje. Nový test před opravou selhal (střed textu 395,8 bodu na stránce vysoké 792 bodů); po opravě prošlo všech 26 testů `EditorReviewTests` v Release. Skutečný export přes systémový dialog vytvořil jednu stránku PDF s přesným textem `První soubor 😀`, středem textu 743,2 bodu na stránce vysoké 841,9 bodu a obecným autorem `Test`. Přetažení souboru přímo do textové plochy otevřelo druhou kartu a zachovalo rozepsaný koncept. Zkouška proběhla na macOS 15.7.4 / Apple Silicon nad zdroji tohoto commitu.
+
 | Oblast | Oprava | Doložení |
 | --- | --- | --- |
 | Uložit vše | Zavírání nemůže předběhnout dávku a uložit již zahozený dokument; před krokem se kontroluje vlastnictví dokumentu | Regresní test životního cyklu |

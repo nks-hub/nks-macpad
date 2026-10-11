@@ -62,7 +62,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 ## E. Rozšířená verze 1.0
 
 - [x] Doplnit pořadí karet, přesun mezi okny a obnovu více oken.
-- [ ] Doplnit nedávné soubory, přetažení a tisk.
+- [x] Doplnit nedávné soubory, přetažení a tisk.
 - [x] Doplnit přechod na řádek, volitelná čísla řádků, písmo a stavový řádek včetně výběru nad Unicode.
 - [x] Doplnit Windows-1250, explicitní převody a rozhodnutí pro smíšené konce řádků.
 - [ ] Dokončit češtinu a angličtinu, VoiceOver, kontrast a ovládání bez myši.

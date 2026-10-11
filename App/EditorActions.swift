@@ -257,7 +257,13 @@ extension EditorWindowController {
 
     @objc func printNote(_ sender: Any?) {
         guard let note = active else { return }
-        printableView(for: note).printView(sender)
+        printOperation(for: note).run()
+    }
+
+    func printOperation(for note: TextDocument) -> NSPrintOperation {
+        let info = NSPrintInfo.shared.copy() as! NSPrintInfo
+        info.isVerticallyCentered = false
+        return NSPrintOperation(view: printableView(for: note), printInfo: info)
     }
 
     /// Sized to its text: a fixed 700 pt frame printed a blank second page for short notes.

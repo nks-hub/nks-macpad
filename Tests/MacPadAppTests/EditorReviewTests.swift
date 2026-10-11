@@ -1,4 +1,5 @@
 import AppKit
+import PDFKit
 import XCTest
 
 final class EditorReviewTests: XCTestCase {
@@ -221,6 +222,30 @@ final class EditorReviewTests: XCTestCase {
         let long = TextDocument()
         long.text = (1...300).map { "line \($0)" }.joined(separator: "\n")
         XCTAssertGreaterThan(editor.printableView(for: long).frame.height, page)
+    }
+
+    @MainActor
+    func testShortNotePrintsNearTopOfSinglePDFPage() throws {
+        let editor = makeEditor(text: "First printed line")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".pdf")
+        defer { try? FileManager.default.removeItem(at: url); finish() }
+        let operation = editor.printOperation(for: try XCTUnwrap(editor.active))
+        operation.printInfo.orientation = .portrait
+        operation.printInfo.scalingFactor = 1
+        operation.printInfo.paperSize = NSSize(width: 612, height: 792)
+        operation.printInfo.topMargin = 36
+        operation.printInfo.bottomMargin = 36
+        operation.printInfo.jobDisposition = .save
+        operation.printInfo.dictionary()[NSPrintInfo.AttributeKey.jobSavingURL] = url
+        operation.showsPrintPanel = false
+        operation.showsProgressPanel = false
+        XCTAssertTrue(operation.run())
+        let pdf = try XCTUnwrap(PDFDocument(url: url))
+        XCTAssertEqual(pdf.pageCount, 1)
+        let page = try XCTUnwrap(pdf.page(at: 0))
+        XCTAssertEqual(page.string?.trimmingCharacters(in: .whitespacesAndNewlines), "First printed line")
+        let selection = try XCTUnwrap(page.selection(for: NSRange(location: 0, length: 5)))
+        XCTAssertGreaterThan(selection.bounds(for: page).midY, 600, "Short notes must start near the top margin")
     }
 
     @MainActor
