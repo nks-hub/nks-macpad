@@ -133,10 +133,14 @@ Rozhraní je anglické. Zalamování a pokračování předchozí relace jsou za
 | P05 | Stejná cesta a zástupce `.lnk` aktivovaly původní kartu; soubor bez přípony se otevřel. Hardlink vytvořil další kartu. |
 | P06 | Zrušení zavření zachovalo celý text, Don't save odstranilo kartu, Save uložilo správný soubor a kartu zavřelo. |
 | P07 | Exit ukončil procesy; nové spuštění zachovalo aktivní koncept, pozici kurzoru a pořadí všech 12 názvů karet. |
+| P08 | Vynucené ukončení GUI procesu přes TerminateProcess, potvrzený konec a nové spuštění obnovily celý aktivní koncept s emoji, výběr a pořadí všech 16 názvů karet. Obsah ostatních 15 karet se při tomto průchodu neporovnával. |
+| P09 | U souboru označeného read-only nabídlo Ctrl+S dialog Uložit jako. Zrušit zachovalo upravený buffer i původní bajty; uložení kopie zapsalo přesný upravený text a zdroj zůstal beze změny. |
+| P10 | Po úpravě bufferu a následném externím přepsání zdroje uložilo Ctrl+S obsah bufferu přes externí verzi bez dalšího potvrzení. Platí pro popsanou izolovanou metodu. |
+| P11 | Nahradit vše změnilo tři výskyty ve dvou řádcích; jediné Ctrl+Z obnovilo původní text. Hledání za emoji vybralo správný rozsah UTF-16 9/5 a Ctrl+G přešlo na druhý řádek na pozici 15. |
 
 Ctrl+Y fungovalo, přestože nabídka Edit nemá samostatnou položku Redo. Z nabídky jsou doložené Ctrl+N, Ctrl+Shift+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, Ctrl+Alt+S, Ctrl+W, Ctrl+Shift+W a Ctrl+P; vyvolání přes klávesovou událost bylo použité u otevírání, ukládání, karet a undo/redo. U obnovy po undo/redo se v této metodě objevil nesoulad mezi textem a příznakem změny. Bez dalšího ověření jej nelze vydávat za průkazné chování běžně ovládané reference.
 
-MacPad záměrně zachovává dva rozdíly dané plánem: nejednoznačné kódování vybírá uživatel a hardlinky mají jedinou otevřenou identitu. Přejímka Windows P01–P12 jako celek zůstává otevřená, zejména zbývající větve obnovy, chybové situace, vložení, hledání a tisk.
+MacPad záměrně zachovává rozdíly dané plánem: nejednoznačné kódování vybírá uživatel, hardlinky mají jedinou otevřenou identitu a externí změna vyžaduje rozhodnutí před přepsáním. Přejímka Windows P01–P12 jako celek zůstává otevřená, zejména zbývající větve obnovy, chybové situace, formátované vložení a tisk. Po zkoušce vynuceného ukončení zůstala původní osobní data Notepadu beze změny podle množiny souborů a SHA-256.
 
 ## Měření výkonu
 

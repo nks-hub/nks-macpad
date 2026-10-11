@@ -24,8 +24,8 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 
 ## A. Reference a technická zkouška
 
-- [ ] Změřit P01 až P12 v izolované relaci Windows Notepadu a zaznamenat verzi i nastavení.
-- [ ] Uzavřít rozdíly vůči referenci: zkratky, zavření oken, konce řádků a formát souborů.
+- [ ] Dokončit P01 až P12 v izolovaném Notepadu 11.2607.14.0; doložené jsou soubory, část obnovy včetně pádu, read-only, externí přepsání a hledání, zbývá vložení, další větve obnovy/chyb a tisk.
+- [ ] Uzavřít rozdíly vůči referenci: zkratky, zavření oken, konce řádků a formát souborů; volba kódování, společná identita hardlinků a ochrana externích změn jsou záměrné rozdíly.
 - [x] Ověřit přihlášení do VNC a běh testů v uživatelské relaci Macu.
 - [x] Vytvořit AppKit projekt, opakovatelný build a XCTest targety.
 - [x] Ověřit dvě karty, NSDocument, NSTextView, oddělené undo a bezpečné explicitní ukládání na původním rozhraní.
@@ -66,8 +66,8 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 - [x] Doplnit přechod na řádek, volitelná čísla řádků, písmo a stavový řádek včetně výběru nad Unicode.
 - [x] Doplnit Windows-1250, explicitní převody a rozhodnutí pro smíšené konce řádků.
 - [x] Dokončit češtinu a angličtinu, VoiceOver, kontrast a ovládání bez myši.
-- [ ] Ověřit Home/End, výběr a modifikátory na fyzické Mac i Windows klávesnici.
-- [ ] Ověřit P12 až P14, dlouhé řádky, větší soubory a navržené výkonové cíle.
+- [ ] Ověřit Home/End, výběr a modifikátory na fyzické Mac i Windows klávesnici; hardware není dostupný a syntetické vstupy tuto zkoušku nenahrazují.
+- [ ] Uzavřít P12 až P14 a výkonové cíle; zrušení otevření 50 MiB prošlo, studený start po vyčištění cache má medián 1 775 ms proti cíli 1 000 ms.
 - [x] Otestovat nejnižší podporovaný macOS; macOS 14.8.9 arm64 prošel 143 testy v CI, Intel zůstává nepodporovaný.
 - [x] E02: doplnit připnutí a vlastní názvy konceptů se zachováním po restartu; ověřit P17.
 - [x] E03: přidat přepínač karet a vyhledání existujících příkazů menu; ověřit P18.
@@ -90,7 +90,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 - [x] Zkontrolovat obsah i historii Gitu před zveřejněním na citlivé údaje a nechtěné soubory.
 - [x] Doplnit ověřený návod k sestavení a spuštění, licenci MIT a známá omezení.
 - [x] Zveřejnit repozitář nks-hub/nks-macpad podle zadání.
-- [ ] Vydat první distribuční balíček až po přejímce, podpisu a notarizaci v rámci zadání k vydání.
+- [ ] Po přejímce vytvořit a vydat nový podepsaný a notarizovaný balíček v rámci zadání k vydání; ověřený balíček z `3206e99` ještě neobsahuje pozdější opravy.
 
 ## G. Návrhy pro verzi 1.1
 
