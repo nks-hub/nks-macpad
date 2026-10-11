@@ -98,7 +98,7 @@ bash scripts/build.sh test
 CONFIGURATION=Release bash scripts/build.sh test
 ```
 
-Revision `3206e99` passed 137 automated tests on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 89 for AppKit, lifecycle, split editing, Markdown and performance. The later printing fix in `01eebc7` passed 26 editor tests, including PDF page count, text and placement, plus an export through the system print dialog. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 717 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Details and measurement limits are in [docs/VALIDATION.md](docs/VALIDATION.md).
+Revision `fe9675e` passed 139 automated tests on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 91 for AppKit, lifecycle, split editing, Markdown, printing and performance. GUI checks also cover PDF output, the menu bar quick note and keyboard control of focus mode and always-on-top with VoiceOver. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 743 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 24 ms. Details and measurement limits are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 

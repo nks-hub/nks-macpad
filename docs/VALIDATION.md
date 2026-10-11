@@ -4,6 +4,8 @@ Review výchozí revize `f80f289` proběhlo 9.–10. 10. 2026. Opravy jsou v `4c
 
 Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `eadb1b1`, `eaa73bf`, `f5832f9`, `b0b386d`, `8f8ec36` a `82ab271`; tři z nich našel až průchod skutečnou aplikací. Pro přejímku se používají scénáře z [plánu](../PLAN.md).
 
+Celá sada nad `fe9675e` prošla 11. 10. 2026 v Release na macOS 15.7.4 / Apple Silicon: 139 testů (48 core, 91 AppKit), běh bez přerušení. Stejným postupem s `displayIfNeeded` mělo otevření 50 MiB krátkých ASCII řádků medián 743 ms a maximum 757 ms; vložení znaku 8/8 ms. Vložení znaku do 10 MiB českého textu mělo 24/24 ms. Dřívější měření níže zůstávají přiřazená ke svým revizím.
+
 ## Opravené nálezy
 
 Při průchodu s VoiceOverem 11. 10. 2026 se ukázalo, že po přesunu fokusu do výsledků panelu příkazů Enter příkaz nespustí a Escape panel nezavře. Tlačítko Otevřít nyní používá nativní výchozí klávesu Enter a controller přijímá Escape i z tabulky. Prošlo 27 testů `EditorReviewTests`, včetně skutečné události Escape při fokusu ve výsledcích, bez spuštění akce a se zachovaným textem i návratem fokusu. Enter byl ověřený v běžící aplikaci, také s VoiceOverem.
