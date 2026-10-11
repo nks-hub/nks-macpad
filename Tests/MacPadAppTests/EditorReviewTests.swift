@@ -27,6 +27,39 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testCloseCommandKeepsSavingAndSessionLocks() throws {
+        let editor = makeEditor(text: "keep this draft")
+        defer { finish() }
+        let note = try XCTUnwrap(editor.active)
+        let item = NSMenuItem(title: "Close", action: #selector(AppDelegate.closeCurrent(_:)), keyEquivalent: "w")
+        XCTAssertTrue(editor.validateMenuItem(item))
+        note.saving = true
+        XCTAssertFalse(editor.validateMenuItem(item))
+        note.saving = false
+        editor.busyClosing = true
+        XCTAssertFalse(editor.validateMenuItem(item))
+        editor.busyClosing = false
+        editor.app.lockEditing(true)
+        XCTAssertFalse(editor.validateMenuItem(item))
+        editor.app.lockEditing(false)
+        XCTAssertTrue(editor.validateMenuItem(item))
+    }
+
+    @MainActor
+    func testCloseCommandWithoutKeyWindowLeavesBackgroundDraft() throws {
+        let editor = makeEditor(text: "keep this draft")
+        defer { finish() }
+        let note = try XCTUnwrap(editor.active)
+        editor.window?.orderOut(nil)
+        XCTAssertNil(NSApp.keyWindow)
+        let item = NSMenuItem(title: "Close", action: #selector(AppDelegate.closeCurrent(_:)), keyEquivalent: "w")
+        XCTAssertFalse(editor.app.validateMenuItem(item))
+        editor.app.closeCurrent(item)
+        XCTAssertTrue(editor.active === note)
+        XCTAssertEqual(note.text, "keep this draft")
+    }
+
+    @MainActor
     func testSmallStatusTextKeepsContrastInLightAndDarkAppearances() {
         let editor = makeEditor(text: "Readable status")
         defer { finish() }

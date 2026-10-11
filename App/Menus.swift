@@ -1,7 +1,7 @@
 import AppKit
 import MacPadCore
 
-extension AppDelegate {
+extension AppDelegate: NSMenuItemValidation {
     func installMenus() {
         let bar = NSMenu()
         NSApp.mainMenu = bar
@@ -43,8 +43,8 @@ extension AppDelegate {
         add(file, L("Porovnat se souborem na disku…", "Compare with file on disk…"), #selector(EditorWindowController.compareWithDisk(_:)))
         add(file, L("Historie uložených verzí…", "Saved version history…"), #selector(EditorWindowController.showHistory(_:)))
         add(file, L("Vymazat historii souboru…", "Delete file history…"), #selector(EditorWindowController.clearFileHistory(_:)))
-        add(file, L("Zavřít kartu", "Close tab"), #selector(EditorWindowController.closeNote(_:)), "w")
-        add(file, L("Zavřít okno", "Close window"), #selector(EditorWindowController.closeWindow(_:)), "w", [.command, .shift])
+        add(file, L("Zavřít kartu", "Close tab"), #selector(closeCurrent(_:)), "w", target: self)
+        add(file, L("Zavřít okno", "Close window"), #selector(NSWindow.performClose(_:)), "w", [.command, .shift])
         file.addItem(.separator())
         add(file, L("Tisk…", "Print…"), #selector(EditorWindowController.printNote(_:)), "p")
 
@@ -120,6 +120,32 @@ extension AppDelegate {
         closedFiles.removeAll()
         NSDocumentController.shared.clearRecentDocuments(sender)
     }
+    private var windowForCloseCommand: NSWindow? {
+        guard NSApp.modalWindow == nil, let window = NSApp.keyWindow,
+              window.sheetParent == nil, window.attachedSheet == nil else { return nil }
+        return window
+    }
+
+    @objc func closeCurrent(_ sender: Any?) {
+        guard let window = windowForCloseCommand else { return }
+        if let editor = editors.first(where: { $0.window === window }) {
+            editor.closeNote(sender)
+        } else {
+            window.performClose(sender)
+        }
+    }
+
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        guard menuItem.action == #selector(closeCurrent(_:)) else { return true }
+        guard let window = windowForCloseCommand else { return false }
+        if let editor = editors.first(where: { $0.window === window }) {
+            menuItem.title = L("Zavřít kartu", "Close tab")
+            return editor.validateMenuItem(menuItem)
+        }
+        menuItem.title = L("Zavřít", "Close")
+        return window.styleMask.contains(.closable)
+    }
+
     @objc func showRecent(_ sender: Any?) {
         if activeEditor == nil { newWindow(nil) }
         let urls = NSDocumentController.shared.recentDocumentURLs
@@ -149,7 +175,8 @@ extension EditorWindowController: NSMenuItemValidation {
         case #selector(compareWithDisk(_:)): return active?.fileURL != nil && active?.saving == false
         case #selector(showHistory(_:)), #selector(clearFileHistory(_:)): return active?.fileURL != nil
         case #selector(sortLines(_:)), #selector(uniqueLines(_:)): return (textView?.selectedRange().length ?? 0) > 0
-        case #selector(saveNote(_:)), #selector(saveAs(_:)), #selector(closeNote(_:)): return active != nil && active?.saving == false && !busyClosing
+        case #selector(saveNote(_:)), #selector(saveAs(_:)), #selector(closeNote(_:)), #selector(AppDelegate.closeCurrent(_:)):
+            return active != nil && active?.saving == false && !busyClosing
         case #selector(setEncoding(_:)): menuItem.state = active?.format.encoding.rawValue == menuItem.representedObject as? String ? .on : .off
         case #selector(setLineEnding(_:)): menuItem.state = active?.format.lineEnding.rawValue == menuItem.representedObject as? String ? .on : .off
         default: break

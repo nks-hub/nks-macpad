@@ -9,7 +9,6 @@ extension EditorWindowController {
 
     @objc func saveNote(_ sender: Any?) { if let active { app.save(active) { _ in } } }
     @objc func saveAs(_ sender: Any?) { if let active { app.save(active, as: true) { _ in } } }
-    @objc func closeWindow(_ sender: Any?) { window?.performClose(sender) }
 
     @objc func closeNote(_ sender: Any?) {
         guard !app.editingLocked, !busyClosing, let note = noteFor(sender), !note.saving else { return }
