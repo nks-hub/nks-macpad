@@ -309,6 +309,72 @@ final class EditorReviewTests: XCTestCase {
     }
 
     @MainActor
+    func testSearchResultRejectsChangedUnicodeRange() async throws {
+        let editor = makeEditor(text: "😀 PŘÍLIŠ žluťoučký")
+        defer { finish() }
+        editor.findAll.stringValue = "příliš"
+        editor.showSearchAll(nil)
+        await waitForResults(editor, count: 1)
+        let result = try XCTUnwrap(editor.results.arrangedSubviews.compactMap { $0 as? ResultButton }.first)
+        result.invoke(nil)
+        XCTAssertEqual(editor.textView?.selectedRange(), NSRange(location: 3, length: 6))
+        editor.textView?.insertText("x", replacementRange: NSRange(location: 0, length: 0))
+        editor.textView?.setSelectedRange(NSRange(location: 0, length: 0))
+        result.invoke(nil)
+        XCTAssertEqual(editor.textView?.selectedRange(), NSRange(location: 0, length: 0))
+        await waitForResults(editor, count: 1)
+        let current = try XCTUnwrap(editor.results.arrangedSubviews.compactMap { $0 as? ResultButton }.first)
+        current.invoke(nil)
+        XCTAssertEqual(editor.textView?.selectedRange(), NSRange(location: 4, length: 6))
+    }
+
+    @MainActor
+    func testEscapeCancelsPendingSearchWithoutPublishingResults() async throws {
+        let editor = makeEditor(text: "needle")
+        defer { finish() }
+        editor.findAll.stringValue = "needle"
+        editor.showSearchAll(nil)
+        let work = try XCTUnwrap(editor.searchWork)
+        editor.escape()
+        let finished = expectation(description: "Cancelled search drained")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.2) {
+            work.waitUntilFinished()
+            finished.fulfill()
+        }
+        await fulfillment(of: [finished], timeout: 3)
+        XCTAssertTrue(work.isCancelled)
+        XCTAssertTrue(editor.results.arrangedSubviews.isEmpty)
+        XCTAssertTrue(editor.findAll.isHidden)
+        XCTAssertTrue(editor.window?.firstResponder === editor.textView)
+    }
+
+    @MainActor
+    func testEscapeStopsRunningSearchBeforeScanningRemainingTabs() async throws {
+        let editor = makeEditor()
+        defer { finish() }
+        let text = String(repeating: "Příliš žluťoučký kůň\n", count: 200_000)
+        editor.notes = (0..<20).map { _ in
+            let note = TextDocument()
+            note.text = text
+            return note
+        }
+        editor.findAll.stringValue = "absent"
+        editor.showSearchAll(nil)
+        let work = try XCTUnwrap(editor.searchWork)
+        let deadline = Date().addingTimeInterval(3)
+        while !work.isExecuting && !work.isFinished && Date() < deadline {
+            try await Task.sleep(nanoseconds: 1_000_000)
+        }
+        XCTAssertTrue(work.isExecuting)
+        let stopped = expectation(description: "Running search stopped")
+        editor.escape()
+        DispatchQueue.global().async { work.waitUntilFinished(); stopped.fulfill() }
+        await fulfillment(of: [stopped], timeout: 0.5)
+        XCTAssertTrue(work.isCancelled)
+        XCTAssertTrue(editor.results.arrangedSubviews.isEmpty)
+    }
+
+    @MainActor
     func testSortUsesSelectedInterfaceLanguage() {
         let previous = UserDefaults.standard.object(forKey: "language")
         UserDefaults.standard.set("cs", forKey: "language")

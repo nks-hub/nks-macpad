@@ -13,6 +13,68 @@ final class PerformanceTests: XCTestCase {
         try await sampleDocument(mebibytes: 10, line: "Příliš žluťoučký kůň úpěl ďábelské ódy 0123456789\n")
     }
 
+    /// Time from the command until results are listed, including the 0.15 s typing pause before a search starts.
+    @MainActor
+    func testSearchAcrossTwentyTabsWithTenMiB() throws {
+        _ = NSApplication.shared
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let app = AppDelegate(sessionDirectory: directory)
+        defer {
+            app.editors.forEach { $0.window?.orderOut(nil) }
+            try? FileManager.default.removeItem(at: directory)
+        }
+        let editor = app.makeWindow()
+        let line = "Příliš žluťoučký kůň úpěl ďábelské ódy 0123456789\n"
+        let text = String(repeating: line, count: 10 * 1_048_576 / 20 / line.utf8.count) + "hledaný výraz\n"
+        for _ in 0..<20 {
+            let note = TextDocument()
+            note.text = text
+            editor.addNote(note)
+        }
+        editor.showWindow(nil)
+        var times: [Double] = []
+        for _ in 0..<5 {
+            editor.findAll.stringValue = "hledaný"
+            let started = ProcessInfo.processInfo.systemUptime
+            editor.showSearchAll(nil)
+            // XCTNSPredicateExpectation polls about once a second, too coarse for this measurement.
+            while editor.results.arrangedSubviews.count != 21 && ProcessInfo.processInfo.systemUptime - started < 10 {
+                RunLoop.current.run(until: Date().addingTimeInterval(0.002))
+            }
+            XCTAssertEqual(editor.results.arrangedSubviews.count, 21)
+            editor.window?.contentView?.layoutSubtreeIfNeeded()
+            editor.window?.displayIfNeeded()
+            times.append(ProcessInfo.processInfo.systemUptime - started)
+            editor.escape()
+        }
+        times.sort()
+        print(String(format: "PERFORMANCE search 20 tabs 10 MiB median=%.3fs max=%.3fs", times[2], times[4]))
+    }
+
+    @MainActor
+    func testQuickNoteInvocation() throws {
+        _ = NSApplication.shared
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let app = AppDelegate(sessionDirectory: directory)
+        defer {
+            app.editors.forEach { $0.window?.orderOut(nil) }
+            try? FileManager.default.removeItem(at: directory)
+        }
+        app.newWindow(nil)
+        var times: [Double] = []
+        for _ in 0..<5 {
+            let started = ProcessInfo.processInfo.systemUptime
+            app.quickNote(nil)
+            let quick = try XCTUnwrap(app.editors.first(where: \.quick))
+            quick.window?.displayIfNeeded()
+            XCTAssertEqual(quick.window?.isVisible, true)
+            times.append(ProcessInfo.processInfo.systemUptime - started)
+            quick.window?.orderOut(nil)
+        }
+        times.sort()
+        print(String(format: "PERFORMANCE quick note median=%.3fs max=%.3fs", times[2], times[4]))
+    }
+
     @MainActor
     private func sampleDocument(mebibytes: Int, line: String = String(repeating: "0123456789", count: 7) + "\n") async throws {
         _ = NSApplication.shared

@@ -24,7 +24,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate, NSText
     var focusMode = false
     var allowClose = false
     var panel: CommandPanel?
-    var searchWork: DispatchWorkItem?
+    var searchWork: BlockOperation?
     var searchGeneration = 0
     var busyClosing = false
     private var tabsWidth: NSLayoutConstraint?

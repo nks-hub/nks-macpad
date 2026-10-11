@@ -136,12 +136,17 @@ extension EditorWindowController {
         results.arrangedSubviews.forEach { results.removeArrangedSubview($0); $0.removeFromSuperview() }
         guard !query.isEmpty else { return }
         let documents = app.editors.flatMap { editor in editor.notes.map { ($0.id, $0.revision, $0.title, $0.text) } }
-        let work = DispatchWorkItem { [weak self] in
+        let work = BlockOperation()
+        work.addExecutionBlock { [weak self, weak work] in
+            guard let work, !work.isCancelled else { return }
             var matches: [(UUID, UInt64, String, NSRange)] = []
             for (id, revision, title, text) in documents {
-                let value = text as NSString
+                guard !work.isCancelled else { return }
+                // Materialize UTF-16 once instead of bridging Swift storage during each range search.
+                let value = NSMutableString(string: text)
                 var cursor = 0
                 while cursor < value.length && matches.count < 200 {
+                    guard !work.isCancelled else { return }
                     let range = value.range(of: query, options: [.caseInsensitive], range: NSRange(location: cursor, length: value.length - cursor))
                     if range.location == NSNotFound { break }
                     let line = value.lineRange(for: range)
@@ -152,7 +157,7 @@ extension EditorWindowController {
                 if matches.count == 200 { break }
             }
             DispatchQueue.main.async {
-                guard let self, self.searchGeneration == generation, !self.findAll.isHidden else { return }
+                guard let self, !work.isCancelled, self.searchGeneration == generation, !self.findAll.isHidden else { return }
                 for (id, revision, title, range) in matches {
                     let button = ResultButton(title: title, target: nil, action: nil)
                     button.bezelStyle = .inline
@@ -177,7 +182,7 @@ extension EditorWindowController {
             }
         }
         searchWork = work
-        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.15, execute: work)
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.15) { work.start() }
     }
 
     @objc func goToLine(_ sender: Any?) {
