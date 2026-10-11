@@ -122,25 +122,26 @@ Tisk krátké poznámky 11. 10. 2026: systémové svislé centrování umisťova
 
 Windows 11 Pro 10.0.22631, x64, Notepad 11.2607.14.0, systémová stránka ANSI 1250. Zkouška používá místní vývojářskou registraci s vlastní identitou a daty na samostatné skryté ploše. Všech šest EXE/DLL má stejné SHA-256 jako instalovaný balíček; změněný manifest nemá alias, protokol ani asociace souborů původní aplikace. Testovací kopie se nedistribuuje. Původní LocalState a Settings si zachovaly stejnou sadu čtyř souborů i jejich kontrolní součty.
 
-Rozhraní je anglické. Zalamování a pokračování předchozí relace jsou zapnuté; formátování, kontrola pravopisu a automatické opravy byly pro porovnání čistého textu vypnuté. Vstup jde přes UI Automation a zprávy Win32 do soukromé vstupní fronty. Nejde o zkoušku fyzické klávesnice ani posouzení vykreslení na aktivní ploše uživatele.
+Rozhraní je anglické. Zalamování a pokračování předchozí relace jsou zapnuté; formátování, kontrola pravopisu a automatické opravy byly pro porovnání čistého textu vypnuté. Vstup jde přes UI Automation a zprávy Win32 do soukromé vstupní fronty. Formátované vložení použilo systémovou schránku, kterou soukromá plocha neizoluje. Nejde o zkoušku fyzické klávesnice ani posouzení vykreslení na aktivní ploše uživatele.
 
 | Scénář | Dosud doložená část |
 | --- | --- |
 | P01 | Český text, emoji, rovné uvozovky a dvě pomlčky se zachovaly; nový soubor měl přesné bajty UTF-8 bez BOM. Enter a uložení dvou řádků daly CRLF. |
-| P02 | Undo a Ctrl+Y změnily správný text; úpravy a undo byly oddělené mezi kartami. Formátované vložení ještě ověřené není. |
+| P02 | Undo a Ctrl+Y změnily správný text; úpravy a undo byly oddělené mezi kartami. Vložení schránky s RTF a Unicode textem zachovalo přesný text; tučná část se vložila jako běžný text s hodnotou UIA FontWeight 400. |
 | P03 | Uložit jako a jeho zrušení, odmítnuté i potvrzené přepsání existujícího cíle. Potvrzený cíl měl přesné bajty a původní soubor se nezměnil. |
-| P04 | Otevření UTF-8 s BOM, UTF-16 LE/BE s BOM, UTF-8 s LF a Windows-1250. Při uložení bez další editace zůstaly bajty stejné. Neplatné UTF-8 se bez dotazu načetlo jako ANSI/1250. |
+| P04 | Otevření UTF-8 s BOM, UTF-16 LE/BE s BOM, UTF-8 s LF a Windows-1250. Uložení bez editace zachovalo bajty; následné vložení znaku a uložení mělo přesné očekávané bajty ve všech pěti formátech, včetně BOM a konců řádků. Neplatné UTF-8 se bez dotazu načetlo jako ANSI/1250. |
 | P05 | Stejná cesta a zástupce `.lnk` aktivovaly původní kartu; soubor bez přípony se otevřel. Hardlink vytvořil další kartu. |
 | P06 | Zrušení zavření zachovalo celý text, Don't save odstranilo kartu, Save uložilo správný soubor a kartu zavřelo. |
 | P07 | Exit ukončil procesy; nové spuštění zachovalo aktivní koncept, pozici kurzoru a pořadí všech 12 názvů karet. |
 | P08 | Vynucené ukončení GUI procesu přes TerminateProcess, potvrzený konec a nové spuštění obnovily celý aktivní koncept s emoji, výběr a pořadí všech 16 názvů karet. Obsah ostatních 15 karet se při tomto průchodu neporovnával. |
-| P09 | U souboru označeného read-only nabídlo Ctrl+S dialog Uložit jako. Zrušit zachovalo upravený buffer i původní bajty; uložení kopie zapsalo přesný upravený text a zdroj zůstal beze změny. |
-| P10 | Po úpravě bufferu a následném externím přepsání zdroje uložilo Ctrl+S obsah bufferu přes externí verzi bez dalšího potvrzení. Platí pro popsanou izolovanou metodu. |
+| P09 | U souboru označeného read-only a po odstranění celé cílové složky nabídlo Ctrl+S dialog Uložit jako. Zrušit zachovalo upravený buffer i původní bajty; uložení kopie zapsalo přesný upravený text. Původní soubor z odstraněné složky byl předem přesunut mimo ni a zůstal beze změny. |
+| P10 | Po úpravě bufferu a následném externím přepsání zdroje uložilo Ctrl+S obsah bufferu přes externí verzi bez dalšího potvrzení. Po externím přejmenování i smazání vytvořilo Ctrl+S nový soubor na původní cestě; přejmenovaná kopie zůstala beze změny. Platí pro popsanou izolovanou metodu. |
 | P11 | Nahradit vše změnilo tři výskyty ve dvou řádcích; jediné Ctrl+Z obnovilo původní text. Hledání za emoji vybralo správný rozsah UTF-16 9/5 a Ctrl+G přešlo na druhý řádek na pozici 15. |
+| P12 | Ctrl+P otevřelo nativní tiskový dialog, Zrušit zachovalo text. Volba Microsoft Print to PDF a potvrzení cíle vytvořily jednostránkové PDF s přesným očekávaným textem. Přesuny karet mezi okny a úplná mapa zkratek ještě nejsou uzavřené. |
 
 Ctrl+Y fungovalo, přestože nabídka Edit nemá samostatnou položku Redo. Z nabídky jsou doložené Ctrl+N, Ctrl+Shift+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, Ctrl+Alt+S, Ctrl+W, Ctrl+Shift+W a Ctrl+P; vyvolání přes klávesovou událost bylo použité u otevírání, ukládání, karet a undo/redo. U obnovy po undo/redo se v této metodě objevil nesoulad mezi textem a příznakem změny. Bez dalšího ověření jej nelze vydávat za průkazné chování běžně ovládané reference.
 
-MacPad záměrně zachovává rozdíly dané plánem: nejednoznačné kódování vybírá uživatel, hardlinky mají jedinou otevřenou identitu a externí změna vyžaduje rozhodnutí před přepsáním. Přejímka Windows P01–P12 jako celek zůstává otevřená, zejména zbývající větve obnovy, chybové situace, formátované vložení a tisk. Po zkoušce vynuceného ukončení zůstala původní osobní data Notepadu beze změny podle množiny souborů a SHA-256.
+MacPad záměrně zachovává rozdíly dané plánem: nejednoznačné kódování vybírá uživatel, hardlinky mají jedinou otevřenou identitu a externí změna vyžaduje rozhodnutí před přepsáním. Přejímka Windows P01–P12 jako celek zůstává otevřená, zejména zbývající větve obnovy, plný disk, editace během ukládání, přesuny karet a úplná mapa zkratek. Po zkoušce vynuceného ukončení zůstala původní osobní data Notepadu beze změny podle množiny souborů a SHA-256.
 
 ## Měření výkonu
 

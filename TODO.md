@@ -24,7 +24,7 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 
 ## A. Reference a technická zkouška
 
-- [ ] Dokončit P01 až P12 v izolovaném Notepadu 11.2607.14.0; doložené jsou soubory, část obnovy včetně pádu, read-only, externí přepsání a hledání, zbývá vložení, další větve obnovy/chyb a tisk.
+- [ ] Dokončit P01 až P12 v izolovaném Notepadu 11.2607.14.0; vložení, formáty po editaci, tisk do PDF a ztracený cíl prošly, zbývají další větve obnovy/chyb, přesuny karet a úplná mapa zkratek.
 - [ ] Uzavřít rozdíly vůči referenci: zkratky, zavření oken, konce řádků a formát souborů; volba kódování, společná identita hardlinků a ochrana externích změn jsou záměrné rozdíly.
 - [x] Ověřit přihlášení do VNC a běh testů v uživatelské relaci Macu.
 - [x] Vytvořit AppKit projekt, opakovatelný build a XCTest targety.
