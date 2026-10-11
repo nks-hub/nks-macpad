@@ -23,6 +23,7 @@
 - 🗂️ **Tabbed notes** - New tabs, pinning, custom draft names, moving tabs between windows, reopening closed files
 - ↔️ **Split editor** - Two editable panes with independent selection and scrolling; the same document shares text, identity and undo
 - 📄 **Plain text files** - Open, Save, Save As, Save All; UTF-8, UTF-16 and Windows-1250 with encoding, BOM and line endings preserved
+- 🖨️ **Files and printing** - Recent files, drag files into the editor and print through the system dialog, including Save as PDF
 - 🔀 **Compare with disk** - Read-only versions with marked line differences; reload or overwrite only after checking that both versions are still current
 - 🕘 **Saved version history** - Optional previous file versions, restored as new drafts; limited to 20 per file, 30 days and 100 MiB in total
 - 💾 **Draft recovery** - Restores drafts, tab order, selection and scroll position after relaunch; recovery copies never touch the original file
@@ -56,7 +57,9 @@ XcodeGen must be in `PATH`, or set `XCODEGEN` to its executable. The script gene
 
 Bundle identifiers: `com.nkshub.macpad` (app) and `com.nkshub.macpad.core` (shared framework).
 
-## Keyboard Shortcuts
+## Usage
+
+### Keyboard shortcuts
 
 | Action | Shortcut |
 |--------|----------|
@@ -72,6 +75,8 @@ Bundle identifiers: `com.nkshub.macpad` (app) and `com.nkshub.macpad.core` (shar
 | Print | ⌘P |
 
 Ctrl aliases work inside the editor and do not override the system keyboard. The quick note global shortcut is off until you set it.
+
+Enable the menu bar icon in **Settings → Recovery and shortcuts**. Clicking it opens the same quick note each time; Escape saves its recovery snapshot, hides the window and returns focus to the previous app. macOS may hide the icon when the menu bar is full; the global shortcut and command palette remain available.
 
 Use **View → Split editor** to open a second pane. Each pane has a document selector; tabs and commands act on the pane marked active. **View → Switch editor pane** moves focus between them. Escape closes the Markdown preview first, if open, then the split. Split layout is temporary; relaunch restores documents and the last active document's cursor.
 
@@ -93,11 +98,11 @@ bash scripts/build.sh test
 CONFIGURATION=Release bash scripts/build.sh test
 ```
 
-137 automated tests pass on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 89 for AppKit, lifecycle, split editing, Markdown and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 717 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Details and measurement limits are in [docs/VALIDATION.md](docs/VALIDATION.md).
+Revision `3206e99` passed 137 automated tests on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 89 for AppKit, lifecycle, split editing, Markdown and performance. The later printing fix in `01eebc7` passed 26 editor tests, including PDF page count, text and placement, plus an export through the system print dialog. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 717 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Details and measurement limits are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 
-`bash scripts/release.sh --help` describes release packaging. It requires a Developer ID Application identity in `SIGN_IDENTITY` and a notarytool keychain profile in `NOTARY_PROFILE`. The script builds a clean Git revision for Apple Silicon, signs and notarizes it, checks Gatekeeper, then places a ZIP, SHA-256 checksum and revision manifest in `dist`. It does not publish a release. Version 0.1.0 passed signing, notarization, quarantined launch and replacement of an earlier development build on macOS 15.7.4. Remaining release gates are tracked in [TODO.md](TODO.md).
+`bash scripts/release.sh --help` describes release packaging. It requires a Developer ID Application identity in `SIGN_IDENTITY` and a notarytool keychain profile in `NOTARY_PROFILE`. The script builds a clean Git revision for Apple Silicon, signs and notarizes it, checks Gatekeeper, then places a ZIP, SHA-256 checksum and revision manifest in `dist`. It does not publish a release. Version 0.1.0 from `3206e99` passed signing, notarization, quarantined launch and replacement of an earlier development build on macOS 15.7.4. That package predates the printing fix. Remaining release gates are tracked in [TODO.md](TODO.md), including complete VoiceOver acceptance, physical keyboards and macOS 14.
 
 ## Contributing
 
