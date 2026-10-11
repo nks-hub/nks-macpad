@@ -2,11 +2,11 @@
 
 Probíhá implementace vývojové verze 0.1.0. Návrh funkcí a pravidel je v [analýze](docs/plans/2026-10-09-macpad-design.md); stav jednotlivých úkolů je v [TODO](TODO.md). Níže jsou cíle pro dokončení verze 1.0, nikoli prohlášení o jejich splnění.
 
-Testování bylo znovu zahájeno společně s úplným code review. Na macOS 15.7.4 prošlo 120 testů zdrojů odpovídajících revizi `9578ba3` v konfiguraci Release. Změřené jsou i výsledky výkonu pro 1/10/50 MiB, hledání a rychlou poznámku. Rozsah důkazů a zbývající mezery jsou v [záznamu ověření](docs/VALIDATION.md). Sdílený Mac se používá jen po kontrole cizí aktivity; volný relay sám o sobě není důkaz volné obrazovky.
+Testování bylo znovu zahájeno společně s úplným code review. Na macOS 15.7.4 prošlo 123 testů zdrojů odpovídajících revizi `74fd171` v konfiguraci Release. Změřené jsou i výsledky výkonu pro 1/10/50 MiB, hledání a rychlou poznámku. Rozsah důkazů a zbývající mezery jsou v [záznamu ověření](docs/VALIDATION.md). Sdílený Mac se používá jen po kontrole cizí aktivity; volný relay sám o sobě není důkaz volné obrazovky.
 
 Ve zdrojích jsou připravené editor, bezpečné souborové operace, obnova relace i rozšíření E01 až E08. Rozhraní má dokumentové karty, nabídku uvnitř okna, stavový řádek a samostatné části nastavení. Nově je otevírání souborů přesunuté mimo hlavní vlákno a má příkaz ke zrušení. Dokončení těchto bodů závisí na jejich ověření, ne pouze na přítomnosti kódu.
 
-Revize 2: verze 1.0 má vedle známého ovládání Notepadu zahrnout rozšíření E01 až E08. Interní použitelný milník končí etapou D, distribuční vydání vyžaduje A až F. Návrhy R01 až R04 patří do samostatné etapy G pro verzi 1.1; R03 a R04 jsou implementované a ověřené. Zdrojový repozitář je veřejný pod licencí MIT; distribuční vydání zůstává podmíněné přejímkou, podpisem a notarizací.
+Revize 2: verze 1.0 má vedle známého ovládání Notepadu zahrnout rozšíření E01 až E08. Interní použitelný milník končí etapou D, distribuční vydání vyžaduje A až F. Návrhy R01 až R04 patří do samostatné etapy G pro verzi 1.1; R02, R03 a R04 jsou implementované a ověřené. Zdrojový repozitář je veřejný pod licencí MIT; distribuční vydání zůstává podmíněné přejímkou, podpisem a notarizací.
 
 ## A. Reference a technická zkouška
 

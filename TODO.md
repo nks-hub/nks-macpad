@@ -2,7 +2,7 @@
 
 Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritéria jsou v [plánu](PLAN.md).
 
-Implementace editoru, rozšíření E01 až E08, historie R03 a porovnání R04 je ve zdrojích. Nad revizí `9578ba3` prošlo 120 automatických testů na Macu. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
+Implementace editoru, rozšíření E01 až E08, náhledu R02, historie R03 a porovnání R04 je ve zdrojích. Nad revizí `74fd171` prošlo 123 automatických testů na Macu. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
 
 ## Před pokračováním v ověřování
 
@@ -95,6 +95,6 @@ Implementace editoru, rozšíření E01 až E08, historie R03 a porovnání R04 
 ## G. Návrhy pro verzi 1.1
 
 - [ ] R01: rozdělit okno na dva pohledy se sdílenou identitou dokumentu; ověřit P24.
-- [ ] R02: vybrat parser a přidat volitelný bezpečný náhled Markdownu; ověřit P25.
+- [x] R02: vybrat parser a přidat volitelný bezpečný náhled Markdownu; ověřit P25 (`74fd171`, Foundation, testy i běžící aplikace).
 - [x] R03: přidat volitelnou historii uložených verzí s limity, mazáním a obnovou do nového konceptu; ověřit P26 (`9578ba3`, testy i běžící aplikace).
 - [x] R04: přidat porovnání externích změn s kontrolou aktuálnosti revizí; ověřit P27 (`f212946`, testy i běžící aplikace).
