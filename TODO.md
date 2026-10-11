@@ -2,7 +2,7 @@
 
 Zaškrtnuté jsou pouze dokončené a ověřené položky. Podrobnosti a kritéria jsou v [plánu](PLAN.md).
 
-Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. Nad zdroji s výběrem kódování prošlo 132 automatických testů na Macu; revize `336e769` má navíc cílenou kontrolu viditelného náhledu a GUI průchod souborových formátů. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
+Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. Nad revizí `3206e99` prošlo 137 automatických testů na Macu. Balíček 0.1.0 pro arm64 prošel podpisem, notarizací a přejímkou instalace/aktualizace na macOS 15.7.4. Otevřené body zahrnují i implementované funkce, kterým ještě chybí úplná přejímka podle plánu; skutečný rozsah je v [záznamu ověření](docs/VALIDATION.md).
 
 ## Před pokračováním v ověřování
 
@@ -84,9 +84,9 @@ Implementace editoru a rozšíření E01 až E08 i R01 až R04 je ve zdrojích. 
 
 - [x] Nastavit identifikátory com.nkshub.macpad a com.nkshub.macpad.core.
 - [x] Zvolit MacPad, licenci MIT a veřejný repozitář nks-hub/nks-macpad.
-- [ ] Připravit release sestavení a potvrdit oprávněnou podpisovou identitu.
-- [ ] Podepsat, notarizovat a ověřit balíček přes Gatekeeper na běžné instalaci.
-- [ ] Ověřit P15 včetně aktualizace se zachováním konceptů a dokumentů.
+- [x] Připravit release sestavení a potvrdit oprávněnou podpisovou identitu.
+- [x] Podepsat, notarizovat a ověřit balíček přes Gatekeeper na běžné instalaci.
+- [x] Ověřit P15 včetně aktualizace se zachováním konceptů a dokumentů.
 - [x] Zkontrolovat obsah i historii Gitu před zveřejněním na citlivé údaje a nechtěné soubory.
 - [x] Doplnit ověřený návod k sestavení a spuštění, licenci MIT a známá omezení.
 - [x] Zveřejnit repozitář nks-hub/nks-macpad podle zadání.

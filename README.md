@@ -1,6 +1,6 @@
 # MacPad
 
-[![Platform](https://img.shields.io/badge/platform-macOS%2014+-111827.svg)](#requirements)
+[![Deployment target](https://img.shields.io/badge/target-macOS%2014-111827.svg)](#requirements)
 [![Swift](https://img.shields.io/badge/Swift-AppKit-F05138.svg?logo=swift&logoColor=white)](https://developer.apple.com/documentation/appkit)
 [![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)](#installation)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -36,8 +36,8 @@
 
 ## Requirements
 
-- macOS 14 or later (verified on macOS 15.7.4)
-- Apple Silicon (verified); Intel not verified yet
+- macOS 15.7.4 on Apple Silicon is verified; macOS 14 remains untested
+- Intel is not supported by the arm64 package
 - Xcode 26.3 and [XcodeGen](https://github.com/yonaskolb/XcodeGen) 2.44.1 for building
 - No runtime dependencies beyond AppKit, Foundation, CryptoKit and Carbon
 
@@ -93,11 +93,11 @@ bash scripts/build.sh test
 CONFIGURATION=Release bash scripts/build.sh test
 ```
 
-134 automated tests pass on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 86 for AppKit, lifecycle, split editing, Markdown and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 717 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Two additional large-insertion tests passed in the focused performance suite. Details and measurement limits are in [docs/VALIDATION.md](docs/VALIDATION.md).
+137 automated tests pass on macOS 15.7.4 in Release: 48 for the file layer, recovery, history and line comparison, 89 for AppKit, lifecycle, split editing, Markdown and performance. On an Apple M1 Pro, opening a 50 MiB file with short ASCII lines takes 717 ms (median) and inserting a character at the end 8 ms; in a 10 MiB file of Czech text the insert takes 23 ms. Details and measurement limits are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Set `MACPAD_SESSION_DIR` to a separate folder for isolated test runs. Do not use real personal notes as test data.
 
-`bash scripts/release.sh --help` describes release packaging. It requires a Developer ID Application identity in `SIGN_IDENTITY` and a notarytool keychain profile in `NOTARY_PROFILE`. The script builds a clean Git revision for Apple Silicon, signs and notarizes it, checks Gatekeeper, then places a ZIP, SHA-256 checksum and revision manifest in `dist`. It does not publish a release. The distribution acceptance checks remain open in [TODO.md](TODO.md).
+`bash scripts/release.sh --help` describes release packaging. It requires a Developer ID Application identity in `SIGN_IDENTITY` and a notarytool keychain profile in `NOTARY_PROFILE`. The script builds a clean Git revision for Apple Silicon, signs and notarizes it, checks Gatekeeper, then places a ZIP, SHA-256 checksum and revision manifest in `dist`. It does not publish a release. Version 0.1.0 passed signing, notarization, quarantined launch and replacement of an earlier development build on macOS 15.7.4. Remaining release gates are tracked in [TODO.md](TODO.md).
 
 ## Contributing
 

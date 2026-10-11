@@ -41,6 +41,12 @@ Druhé review proběhlo 10. 10. 2026 nad `92ddf62`. Opravy jsou v `b3f2c5b`, `ea
 
 ## Provedené kontroly
 
+- Revize `3206e99`: celá sada 137 testů v Release prošla (48 core + 89 AppKit). Oprava metadat sjednotila skutečný bundle s nastavením projektu: verze `0.1.0`, build `1`; dřívější vývojové kopie kvůli výchozí hodnotě XcodeGenu hlásily `1.0`.
+- F/P15: skript `scripts/release.sh` úspěšně sestavil čistý commit `3206e994950061b406535127ee33462b3af8edbd` pro arm64, podepsal aplikaci i framework ověřenou identitou Developer ID, získal notarizaci `Accepted` a připojil i ověřil ticket. Gatekeeper vrátil `accepted`, `source=Notarized Developer ID`. Balíček `MacPad-0.1.0-arm64-3206e9949500.zip` má SHA-256 `7857a9fa2c121fd28a9120163729501bf6b1c42cdfdc7f15c585f33e2cc258bb`; kontrolní součet souhlasil také po stažení archivu.
+- Tentýž archiv byl rozbalen do oddělené instalace v uživatelské složce Applications a označen příznakem quarantine. Gatekeeper zobrazil běžné potvrzení otevření s informací o kontrole Apple. Po potvrzení běžela skutečná podepsaná aplikace, včetně App Translocation. Její binární otisk odpovídal instalovanému balíčku a proces používal určenou izolovanou složku obnovy.
+- Výměna staršího vývojového sestavení zachovala změněný soubor i nový koncept: celý text, ID, pořadí, aktivní kartu a výběr 3/2. Diskový originál zůstal beze změny. Obě karty byly ověřené v běžícím novém procesu a po řádném ukončení také v nově zapsané relaci. Přesun testovací instalace do Koše ponechal dokument a obě obnovovací kopie byte-for-byte zachované. Test proběhl na macOS 15.7.4 / Apple Silicon, bez změny osobních dokumentů. Balíček je připravený; veřejné vydání čeká na zbývající přejímku.
+- Dílčí VoiceOver průchod: skutečný systémový čteč přes titulkový panel přečetl text a výběr emoji s kombinující diakritikou v editoru. Úplné ovládání bez myši dosud doložené není. Opakované připojování VNC přesměrovávalo čteč na systémové oznámení; záznam zkratky navíc ukázal, že Alt z tohoto VNC vstupu dorazí jako Command. Dočasná schránka byla obnovena a VoiceOver vrácen do vypnutého stavu. Nastavení běžícího nástroje klávesnice se neměnilo.
+
 - GUI P11 a zobrazení na `edae752`: přechod na druhý řádek za `A😀é` skončil na správné UTF-16 pozici 6. Výběr emoji a kombinovaného znaku měl rozsah 1/4 a stavový řádek správně hlásil dva vybrané znaky. Čísla řádků šla zapnout i vypnout; native panel písem změnil písmo na Andale Mono a nastavení přežilo restart. Přepínání zalamování, přiblížení/oddálení a návrat na 100 % neměnily text ani bajty. Světlý, tmavý a systémový vzhled byly ověřené přímo v UI; systém zůstal v tmavém režimu. Po volbě angličtiny a restartu byly nabídky a stavový řádek anglické, dokumenty zůstaly zachované.
 - GUI rozšířeného P04: český text se převedl UTF-8 → Windows-1250 → UTF-8 s přesnými očekávanými bajty a CRLF. Pokus o Windows-1250 nad emoji a kombinující diakritikou vyvolal chybu; po návratu k UTF-8 se uložily původní bajty. Smíšené LF/CRLF vyžádaly rozhodnutí. Zrušit zachovalo původní bajty, volba LF zapsala pouze LF a následný výslovný převod na CRLF zapsal pouze CRLF.
 
@@ -150,7 +156,7 @@ Otevření zahrnuje načtení dokumentu a rozvržení viditelné části. Úprav
 - Doplnit měření celkové odezvy včetně vykreslení, paměti, 20 karet a dlouhých řádků podle plánu.
 - Upravený soubor se do relace ukládá celý i s uloženou verzí; velký upravený soubor proto relaci dál zvětšuje.
 - Prověřit ACL a rozšířené atributy souborů.
-- Otestovat macOS 14, Intel a distribuční balíček před jejich označením za podporované.
+- Otestovat macOS 14 a Intel před jejich označením za podporované; balíček arm64 prošel P15 na macOS 15.7.4.
 
 ## Sdílený testovací Mac
 
